@@ -7,6 +7,7 @@ from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
+from encaixe import datas, formularios, telefone
 from encaixe.assinatura import csrf_confere, token_csrf
 from encaixe.config import carregar
 from encaixe.contas import conta_da_sessao
@@ -14,6 +15,15 @@ from encaixe.db import sistema
 
 PASTA = Path(__file__).parent
 modelos = Jinja2Templates(directory=PASTA / "templates")
+modelos.env.globals.update(
+    data_longa=datas.data_longa,
+    data_curta=datas.data_curta,
+    hora_curta=datas.hora_curta,
+    data_e_hora=datas.data_e_hora,
+    dia_da_semana=datas.dia_da_semana,
+    dinheiro=formularios.formatar_dinheiro,
+    telefone=telefone.formatar,
+)
 
 
 def nome_do_cookie() -> str:

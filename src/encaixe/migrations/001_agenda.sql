@@ -38,9 +38,9 @@ create table profissionais (
   dias_a_frente int not null default 30 check (dias_a_frente between 1 and 180),
   cancelar_ate_min int not null default 120 check (cancelar_ate_min between 0 and 20160),
   mensagem_lembrete text not null default
-    'Oi, {nome}! Passando para lembrar do seu horário: {servico}, {dia} às {hora}. Para ver ou cancelar: {link}'
+    'Oi, {nome}! Passando para lembrar do seu horário {dia} às {hora}. Para ver ou cancelar: {link}'
     check (char_length(mensagem_lembrete) <= 500),
-  lembrete_discreto boolean not null default false,  -- tira o nome do serviço da mensagem
+  lembrete_discreto boolean not null default false,  -- {servico} vira "atendimento" na mensagem
   criado_em timestamptz not null default now()
 );
 

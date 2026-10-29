@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Montar minha página · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Montar minha página</h1>
+<form method="post" action="/painel/comecar" novalidate>
+  {{ csrf_campo() }}
+  {{ campo("nome", "Seu nome ou o nome do seu negócio", "text", valores.nome, erros.nome, "É o que o cliente vê no topo da página. Exemplo: Rafa Barbeiro.", "name") }}
+  {{ campo("slug", "Endereço da sua página", "text", valores.slug, erros.slug, "Letras minúsculas, números e hífen. Vira o link que você divulga. Se deixar em branco, usamos o seu nome.", "off", False, 'autocapitalize="none" spellcheck="false"') }}
+  {{ campo("whatsapp", "Seu WhatsApp", "tel", valores.whatsapp, erros.whatsapp, "Com DDD. É para onde o cliente manda mensagem quando precisa falar com você.", "tel") }}
+
+  <fieldset{% if erros.categoria %} aria-describedby="categoria-erro"{% endif %}>
+    <legend>O que você faz?</legend>
+    {% for c in categorias %}
+    <label class="escolha">
+      <input type="radio" name="categoria" value="{{ c.codigo }}" required{% if valores.categoria == c.codigo %} checked{% endif %}>
+      <span><strong>{{ c.rotulo }}</strong><br><span class="dica">{{ c.exemplos }}</span></span>
+    </label>
+    {% endfor %}
+    {% if erros.categoria %}<p class="erro-campo" id="categoria-erro">{{ erros.categoria }}</p>{% endif %}
+    <p class="dica">Isso só escolhe serviços e horários de exemplo. Você muda tudo depois.</p>
+  </fieldset>
+  <button class="botao" type="submit">Criar minha página</button>
+</form>
+{% endblock %}

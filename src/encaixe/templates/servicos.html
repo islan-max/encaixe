@@ -1,0 +1,41 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Serviços · Encaixe{% endblock %}
+{% block painel %}
+<h1>Serviços</h1>
+<p>É o que o cliente escolhe na sua página. Serviço com mais de 1 vaga vira aula: várias pessoas no mesmo horário.</p>
+
+<ul class="lista" aria-label="Seus serviços">
+  {% for s in servicos %}
+  <li class="item{% if not s.ativo %} apagado{% endif %}">
+    <div>
+      <strong>{{ s.nome }}</strong>{% if not s.ativo %} <span class="etiqueta">desativado</span>{% endif %}<br>
+      <span class="dica">{{ s.duracao_min }} min{% if s.folga_min %} + {{ s.folga_min }} min de folga{% endif %}{% if s.vagas > 1 %} · aula com {{ s.vagas }} vagas{% endif %}{% if s.preco_centavos is not none %} · {{ dinheiro(s.preco_centavos) }}{% endif %}</span>
+    </div>
+    <div class="item-acoes">
+      <a class="botao secundario pequeno" href="/painel/servicos/{{ s.id }}" aria-label="Editar {{ s.nome }}">Editar</a>
+      <form method="post" action="/painel/servicos/{{ s.id }}/ativo">
+        {{ csrf_campo() }}
+        <input type="hidden" name="ativo" value="{{ '0' if s.ativo else '1' }}">
+        <button class="botao secundario pequeno" type="submit" aria-label="{{ 'Desativar' if s.ativo else 'Ativar' }} {{ s.nome }}">{{ "Desativar" if s.ativo else "Ativar" }}</button>
+      </form>
+    </div>
+  </li>
+  {% else %}
+  <li class="item">Você ainda não tem serviços. Crie o primeiro abaixo.</li>
+  {% endfor %}
+</ul>
+
+<h2>Novo serviço</h2>
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>{% endif %}
+<form method="post" action="/painel/servicos" novalidate class="cartao">
+  {{ csrf_campo() }}
+  {{ campo("nome", "Nome", "text", valores.nome, erros.nome, None, "off") }}
+  {{ campo("duracao", "Duração em minutos", "number", valores.duracao, erros.duracao, "Quanto tempo o cliente fica com você.", "off", True, 'inputmode="numeric" min="5" max="480" step="5"') }}
+  {{ campo("folga", "Folga depois, em minutos", "number", valores.folga or "0", erros.folga, "Tempo para arrumar antes do próximo. Ninguém marca nesse intervalo.", "off", False, 'inputmode="numeric" min="0" max="120" step="5"') }}
+  {{ campo("vagas", "Vagas por horário", "number", valores.vagas or "1", erros.vagas, "1 para atendimento individual. Mais que 1 para aula em grupo.", "off", False, 'inputmode="numeric" min="1" max="50"') }}
+  {{ campo("preco", "Valor (opcional)", "text", valores.preco, erros.preco, "Só aparece na página. O Encaixe não cobra nem recebe pagamento.", "off", False, 'inputmode="decimal"') }}
+  <button class="botao" type="submit">Adicionar serviço</button>
+</form>
+{% endblock %}

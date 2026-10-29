@@ -1,0 +1,21 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Editar serviço · Encaixe{% endblock %}
+{% block painel %}
+<h1>Editar serviço</h1>
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>{% endif %}
+<form method="post" action="/painel/servicos/{{ servico.id }}" novalidate>
+  {{ csrf_campo() }}
+  {{ campo("nome", "Nome", "text", servico.nome, erros.nome, None, "off") }}
+  {{ campo("duracao", "Duração em minutos", "number", servico.duracao_min, erros.duracao, None, "off", True, 'inputmode="numeric" min="5" max="480" step="5"') }}
+  {{ campo("folga", "Folga depois, em minutos", "number", servico.folga_min, erros.folga, "Tempo para arrumar antes do próximo. Ninguém marca nesse intervalo.", "off", False, 'inputmode="numeric" min="0" max="120" step="5"') }}
+  {{ campo("vagas", "Vagas por horário", "number", servico.vagas, erros.vagas, "1 para atendimento individual. Mais que 1 para aula em grupo.", "off", False, 'inputmode="numeric" min="1" max="50"') }}
+  {{ campo("preco", "Valor (opcional)", "text", servico.preco_texto if servico.preco_texto is defined else (dinheiro(servico.preco_centavos) if servico.preco_centavos is not none else ""), erros.preco, None, "off", False, 'inputmode="decimal"') }}
+  <p class="dica">Mudar a duração ou as vagas vale só para novas reservas. As que já existem continuam como foram marcadas.</p>
+  <div class="acoes">
+    <button class="botao" type="submit">Salvar</button>
+    <a class="botao secundario" href="/painel/servicos">Voltar</a>
+  </div>
+</form>
+{% endblock %}

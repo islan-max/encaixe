@@ -1,17 +1,27 @@
-{% extends "base.html" %}
+{% extends "painel_base.html" %}
 {% block titulo %}Meu painel · Encaixe{% endblock %}
-{% block robots %}<meta name="robots" content="noindex">{% endblock %}
-{% block conteudo %}
-<h1>Meu painel</h1>
+{% block painel %}
+<h1>Olá, {{ perfil.nome }}</h1>
+
 {% if codigos_restantes is not none and codigos_restantes <= 2 %}
 <div class="aviso atencao" role="status">
-  <p>Seus códigos de recuperação estão acabando ({{ codigos_restantes }} restantes).</p>
+  <p>Seus códigos de recuperação estão acabando ({{ codigos_restantes }} restantes). <a href="/painel/perfil#codigos">Gerar códigos novos</a>.</p>
 </div>
 {% endif %}
-{% if not usuario.profissional_id %}
-<div class="cartao">
-  <h2>Falta montar sua página</h2>
-  <p>Em breve: nome da página, serviços e horários de atendimento.</p>
-</div>
-{% endif %}
+
+<section class="cartao" aria-labelledby="link-titulo">
+  <h2 id="link-titulo">Sua página de agendamento</h2>
+  <p>Este é o link que você divulga. O cliente abre, escolhe o horário e marca.</p>
+  <p><a href="{{ link }}"><strong>{{ link }}</strong></a></p>
+</section>
+
+<section aria-labelledby="passos">
+  <h2 id="passos">Para sua página ficar pronta</h2>
+  <ol>
+    <li><a href="/painel/servicos">Confira seus serviços</a> ({{ n_servicos }} ativo{{ "s" if n_servicos != 1 }}): nome, duração e valor.</li>
+    <li><a href="/painel/horarios">Ajuste seus horários de atendimento</a> por dia da semana.</li>
+    <li><a href="/painel/regras">Escolha as regras</a>: antecedência mínima e prazo de cancelamento.</li>
+    <li><a href="/painel/folgas">Marque folgas e férias</a> para os horários sumirem da página.</li>
+  </ol>
+</section>
 {% endblock %}

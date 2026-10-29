@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as ErroHTTP
 
-from encaixe import rotas_contas, rotas_site
+from encaixe import rotas_contas, rotas_painel, rotas_site
 from encaixe.google import ClienteGoogle
 from encaixe.seguranca import Seguranca
 from encaixe.web import PASTA, PrecisaEntrar, pagina
@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     app.mount("/static", StaticFiles(directory=PASTA / "static"), name="static")
     app.include_router(rotas_site.roteador)
     app.include_router(rotas_contas.roteador)
+    app.include_router(rotas_painel.roteador)
 
     @app.api_route("/saude", methods=["GET", "HEAD"])
     def saude() -> dict[str, str]:
@@ -33,6 +34,10 @@ def create_app() -> FastAPI:
     def precisa_entrar(request: Request, _: PrecisaEntrar):
         return RedirectResponse("/entrar", status_code=303)
 
+    @app.exception_handler(rotas_painel.ComecarPerfil)
+    def comecar_perfil(request: Request, _: rotas_painel.ComecarPerfil):
+        return RedirectResponse("/painel/comecar", status_code=303)
+
     @app.exception_handler(ErroHTTP)
     def erro_http(request: Request, erro: ErroHTTP) -> HTMLResponse:
         titulo, ajuda = _TITULOS.get(erro.status_code, ("Algo deu errado", "Tente de novo."))
@@ -42,7 +47,7 @@ def create_app() -> FastAPI:
             status=erro.status_code,
             titulo=titulo,
             ajuda=ajuda,
-            detalhe=erro.detail if erro.status_code == 403 else None,
+            detalhe=erro.detail if erro.status_code in (403, 422) else None,
         )
 
     return app
