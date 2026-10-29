@@ -413,3 +413,30 @@ def test_tempo_de_vida_da_sessao_vence(cliente):
     with sistema() as conn:
         conn.execute("update sessoes set expira_em = now() - interval '1 second'")
     assert cliente.get("/painel").status_code == 303
+
+
+def test_ip_do_cliente_so_confia_no_que_foi_configurado(monkeypatch):
+    from starlette.requests import Request
+
+    def pedido(cabecalhos: dict[str, str]) -> Request:
+        escopo = {
+            "type": "http",
+            "headers": [(k.encode(), v.encode()) for k, v in cabecalhos.items()],
+            "client": ("10.1.1.1", 1234),
+        }
+        return Request(escopo)
+
+    forjado = {"x-forwarded-for": "6.6.6.6", "cf-connecting-ip": "203.0.113.7"}
+    # Sem configuração: ninguém é de confiança, vale o endereço da conexão.
+    assert limite.ip_do_cliente(pedido(forjado)) == "10.1.1.1"
+    # Com o cabeçalho que o proxy sobrescreve: vale ele, não o X-Forwarded-For forjado.
+    monkeypatch.setenv("CLIENT_IP_HEADER", "CF-Connecting-IP")
+    assert limite.ip_do_cliente(pedido(forjado)) == "203.0.113.7"
+    # Cabeçalho ausente: volta ao endereço da conexão (não ao forjável).
+    assert limite.ip_do_cliente(pedido({"x-forwarded-for": "6.6.6.6"})) == "10.1.1.1"
+    monkeypatch.delenv("CLIENT_IP_HEADER")
+    # PROXY_HOPS: conta da direita, então o prefixo forjado pelo visitante não muda o resultado.
+    monkeypatch.setenv("PROXY_HOPS", "1")
+    assert (
+        limite.ip_do_cliente(pedido({"x-forwarded-for": "6.6.6.6, 198.51.100.9"})) == "198.51.100.9"
+    )

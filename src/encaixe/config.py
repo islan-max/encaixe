@@ -13,6 +13,9 @@ class Config:
     secret_key: str
     base_url: str  # endereço público, usado no redirect do Google e nos links
     proxy_hops: int  # quantos proxies confiáveis estão na frente (0 = ninguém)
+    client_ip_header: (
+        str | None
+    )  # cabeçalho que o proxy de confiança sobrescreve (ex.: cf-connecting-ip)
     google_client_id: str | None
     google_client_secret: str | None
     cron_secret: str | None
@@ -37,6 +40,7 @@ def carregar() -> Config:
         secret_key=chave or _CHAVE_DE_DESENVOLVIMENTO,
         base_url=os.environ.get("BASE_URL", "http://localhost:8000").rstrip("/"),
         proxy_hops=int(os.environ.get("PROXY_HOPS", "0")),
+        client_ip_header=(os.environ.get("CLIENT_IP_HEADER") or "").strip().lower() or None,
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID") or None,
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET") or None,
         cron_secret=os.environ.get("CRON_SECRET") or None,

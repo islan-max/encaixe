@@ -13,8 +13,18 @@ import { fileURLToPath } from "node:url";
 import { chromium, devices, request } from "playwright";
 
 const RAIZ = resolve(fileURLToPath(new URL("../..", import.meta.url)));
+// ENCAIXE_E2E_URL aponta a suíte para um site já publicado (em vez de subir o app local). Nesse
+// modo os dados de teste levam um sufixo único e as contas com página são apagadas no fim.
+const REMOTO = process.env.ENCAIXE_E2E_URL?.replace(/\/$/, "");
 const PORTA = Number(process.env.ENCAIXE_E2E_PORTA || 8123);
-const ORIGEM = `http://localhost:${PORTA}`;
+const ORIGEM = REMOTO || `http://localhost:${PORTA}`;
+const RUN = Date.now().toString(36);
+const SUFIXO = REMOTO ? `-${RUN}` : "";
+const SLUG_RAFA = `${REMOTO ? "demo-barbeiro" : "rafa-barbeiro"}${SUFIXO}`;
+const SLUG_LU = `${REMOTO ? "demo-personal" : "lu-fit"}${SUFIXO}`;
+const EMAIL_RAFA = REMOTO ? `rafa+${RUN}@exemplo.com` : "rafa@exemplo.com";
+const EMAIL_LU = REMOTO ? `lu+${RUN}@exemplo.com` : "lu@exemplo.com";
+const EMAIL_NOVO = REMOTO ? `novo+${RUN}@exemplo.com` : "novo@exemplo.com";
 const SENHA = "uma frase longa e boa";
 const ESQUEMAS = ["dark", "light"];
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa", "best-practice"];
@@ -26,6 +36,11 @@ const S = {}; // dados semeados
 // --- servidor e semente --------------------------------------------------------------------
 
 async function subirServidor() {
+  if (REMOTO) {
+    const r = await fetch(`${ORIGEM}/saude`, { signal: AbortSignal.timeout(90_000) });
+    assert.ok(r.ok, "o site publicado não respondeu em /saude");
+    return;
+  }
   servidor = spawn("uv", ["run", "python", "scripts/dev.py", "--porta", String(PORTA)], {
     cwd: RAIZ,
     env: { ...process.env, BASE_URL: ORIGEM, PYTHONUTF8: "1" },
@@ -49,7 +64,7 @@ async function subirServidor() {
 }
 
 function derrubarServidor() {
-  if (!servidor || servidor.exitCode !== null) return;
+  if (REMOTO || !servidor || servidor.exitCode !== null) return;
   try {
     if (process.platform === "win32") execSync(`taskkill /pid ${servidor.pid} /T /F`, { stdio: "ignore" });
     else process.kill(-servidor.pid, "SIGTERM");
@@ -97,14 +112,15 @@ async function reservar(api, slug, link, nome) {
 
 async function semear() {
   // Rafa: barbeiro, com reservas e uma cancelada.
-  const rafa = await criarConta("rafa@exemplo.com", "rafa-barbeiro", "beleza", "Rafa Barbeiro");
-  const home = await (await rafa.api.get("/rafa-barbeiro")).text();
-  const servico = links(home, /href="(\/rafa-barbeiro\?s=[^"]+)"/g)[0];
-  const { dia, hs } = await diaComMuitosHorarios(rafa.api, "rafa-barbeiro", servico);
+  const rafa = await criarConta(EMAIL_RAFA, SLUG_RAFA, "beleza", "Rafa Barbeiro");
+  const home = await (await rafa.api.get(`/${SLUG_RAFA}`)).text();
+  const servico = links(home, new RegExp(`href="(/${SLUG_RAFA}\\?s=[^"]+)"`, "g"))[0];
+  assert.ok(servico, `sem link de serviço em /${SLUG_RAFA}: ${home.replace(/\s+/g, " ").slice(0, 400)}`);
+  const { dia, hs } = await diaComMuitosHorarios(rafa.api, SLUG_RAFA, servico);
   Object.assign(S, { servico, dia, hs, diaIso: new URL(dia, ORIGEM).searchParams.get("dia"), proximo: 0 });
   S.slot = (i) => new URL(hs[i], ORIGEM).searchParams.get("h"); // o `h` do i-ésimo horário do dia
-  S.tokenA = await reservar(rafa.api, "rafa-barbeiro", hs[0], "Dona Maria");
-  S.tokenB = await reservar(rafa.api, "rafa-barbeiro", hs[1], "Seu João");
+  S.tokenA = await reservar(rafa.api, SLUG_RAFA, hs[0], "Dona Maria");
+  S.tokenB = await reservar(rafa.api, SLUG_RAFA, hs[1], "Seu João");
   const cancelada = await rafa.api.post(`/reserva/${S.tokenB}/cancelar`);
   assert.ok(cancelada.ok());
   const agenda = await (await rafa.api.get(`/painel?dia=${S.diaIso}`)).text();
@@ -112,25 +128,26 @@ async function semear() {
   S.rafa = rafa;
 
   // Lu: personal com aula de 2 vagas, já cheia.
-  const lu = await criarConta("lu@exemplo.com", "lu-fit", "treino", "Lu Fit");
+  const lu = await criarConta(EMAIL_LU, SLUG_LU, "treino", "Lu Fit");
   const servicos = await (await lu.api.get("/painel/servicos")).text();
   const aulaId = servicos.match(/href="\/painel\/servicos\/([0-9a-f-]{36})">Editar<span class="sr-only"> Aula em grupo<\/span>/)[1];
   const salvou = await lu.api.post(`/painel/servicos/${aulaId}`, {
     form: { csrf: lu.csrf, nome: "Aula em grupo", duracao: "60", folga: "0", vagas: "2", preco: "" },
   });
   assert.ok(salvou.ok());
-  const aula = links(await (await lu.api.get("/lu-fit")).text(), /href="(\/lu-fit\?s=[^"]+)"/g)[0];
-  const diaAula = await diaComMuitosHorarios(lu.api, "lu-fit", aula).catch(async () => {
-    const dias = links(await (await lu.api.get(aula)).text(), /href="(\/lu-fit\?[^"]*dia=[^"]+)"/g);
-    const hs = links(await (await lu.api.get(dias[0])).text(), /href="(\/lu-fit\?[^"]*h=\d+[^"]*)"/g);
+  const aula = links(await (await lu.api.get(`/${SLUG_LU}`)).text(), new RegExp(`href="(/${SLUG_LU}\\?s=[^"]+)"`, "g"))[0];
+  S.lu = lu;
+  const diaAula = await diaComMuitosHorarios(lu.api, SLUG_LU, aula).catch(async () => {
+    const dias = links(await (await lu.api.get(aula)).text(), new RegExp(`href="(/${SLUG_LU}\\?[^"]*dia=[^"]+)"`, "g"));
+    const hs = links(await (await lu.api.get(dias[0])).text(), new RegExp(`href="(/${SLUG_LU}\\?[^"]*h=\\d+[^"]*)"`, "g"));
     return { dia: dias[0], hs };
   });
-  await reservar(lu.api, "lu-fit", diaAula.hs[0], "Aluna Ana");
-  await reservar(lu.api, "lu-fit", diaAula.hs[0], "Aluno Beto");
+  await reservar(lu.api, SLUG_LU, diaAula.hs[0], "Aluna Ana");
+  await reservar(lu.api, SLUG_LU, diaAula.hs[0], "Aluno Beto");
   S.aulaDia = diaAula.dia;
 
   // Conta nova, sem página ainda.
-  await criarConta("novo@exemplo.com", null, null, null);
+  await criarConta(EMAIL_NOVO, null, null, null);
 }
 
 function proximoHorario() {
@@ -184,7 +201,7 @@ const PAGINAS = [
     },
   },
   // Cliente, sem conta
-  { nome: "cliente: serviços", url: () => "/rafa-barbeiro" },
+  { nome: "cliente: serviços", url: () => `/${SLUG_RAFA}` },
   { nome: "cliente: dias", url: () => S.servico },
   { nome: "cliente: horários", url: () => S.dia },
   { nome: "cliente: dados", url: () => proximoHorario() },
@@ -205,7 +222,7 @@ const PAGINAS = [
       await preencher({ "#nome": "Dona Pressa", "#whatsapp": "(11) 96666-5555" })(p);
       // Outra pessoa pega o horário antes de ela confirmar.
       const ladrao = await request.newContext({ baseURL: ORIGEM });
-      const r = await ladrao.post("/rafa-barbeiro/reservar", {
+      const r = await ladrao.post(`/${SLUG_RAFA}/reservar`, {
         form: { s: q.get("s"), h: q.get("h"), nome: "Seu Rápido", whatsapp: "(11) 95555-4444" },
         maxRedirects: 0,
       });
@@ -222,51 +239,51 @@ const PAGINAS = [
   { nome: "reserva: trocar horário (dias)", url: () => `/reserva/${S.tokenA}/remarcar` },
   { nome: "reserva: trocar horário (horários)", url: () => `/reserva/${S.tokenA}/remarcar?dia=${S.diaIso}` },
   // Profissional
-  { nome: "painel: agenda de hoje", url: "/painel", login: "rafa@exemplo.com" },
-  { nome: "painel: agenda com reservas", url: () => `/painel?dia=${S.diaIso}`, login: "rafa@exemplo.com" },
-  { nome: "painel: serviços", url: "/painel/servicos", login: "rafa@exemplo.com" },
+  { nome: "painel: agenda de hoje", url: "/painel", login: EMAIL_RAFA },
+  { nome: "painel: agenda com reservas", url: () => `/painel?dia=${S.diaIso}`, login: EMAIL_RAFA },
+  { nome: "painel: serviços", url: "/painel/servicos", login: EMAIL_RAFA },
   {
     nome: "painel: serviços com erro",
     url: "/painel/servicos",
-    login: "rafa@exemplo.com",
+    login: EMAIL_RAFA,
     antes: async (p) => {
       await preencher({ "#nome": "X", "#duracao": "1", "#preco": "caro" })(p);
       await enviar("form[action='/painel/servicos'] button[type=submit]")(p);
       await p.waitForSelector(".erro-campo");
     },
   },
-  { nome: "painel: horários", url: "/painel/horarios", login: "rafa@exemplo.com" },
+  { nome: "painel: horários", url: "/painel/horarios", login: EMAIL_RAFA },
   {
     nome: "painel: horários com erro",
     url: "/painel/horarios",
-    login: "rafa@exemplo.com",
+    login: EMAIL_RAFA,
     antes: async (p) => {
       await preencher({ "[name=d0a_ini]": "12:00", "[name=d0a_fim]": "09:00" })(p);
       await enviar("form[action='/painel/horarios'] button[type=submit]")(p);
       await p.waitForSelector(".aviso.erro");
     },
   },
-  { nome: "painel: regras", url: "/painel/regras", login: "rafa@exemplo.com" },
-  { nome: "painel: folgas", url: "/painel/folgas", login: "rafa@exemplo.com" },
+  { nome: "painel: regras", url: "/painel/regras", login: EMAIL_RAFA },
+  { nome: "painel: folgas", url: "/painel/folgas", login: EMAIL_RAFA },
   {
     nome: "painel: folgas com erro",
     url: "/painel/folgas",
-    login: "rafa@exemplo.com",
+    login: EMAIL_RAFA,
     antes: async (p) => {
       await enviar("form[action='/painel/folgas'] button[type=submit]")(p);
       await p.waitForSelector(".erro-campo");
     },
   },
-  { nome: "painel: divulgação", url: "/painel/divulgacao", login: "rafa@exemplo.com" },
-  { nome: "painel: perfil", url: "/painel/perfil", login: "rafa@exemplo.com" },
-  { nome: "painel: excluir conta", url: "/painel/excluir-conta", login: "rafa@exemplo.com" },
-  { nome: "painel: cancelar horário", url: () => `/painel/reservas/${S.reservaId}/cancelar?dia=${S.diaIso}`, login: "rafa@exemplo.com" },
-  { nome: "painel: sem página ainda", url: "/painel", login: "novo@exemplo.com" },
-  { nome: "painel: montar página", url: "/painel/comecar", login: "novo@exemplo.com" },
+  { nome: "painel: divulgação", url: "/painel/divulgacao", login: EMAIL_RAFA },
+  { nome: "painel: perfil", url: "/painel/perfil", login: EMAIL_RAFA },
+  { nome: "painel: excluir conta", url: "/painel/excluir-conta", login: EMAIL_RAFA },
+  { nome: "painel: cancelar horário", url: () => `/painel/reservas/${S.reservaId}/cancelar?dia=${S.diaIso}`, login: EMAIL_RAFA },
+  { nome: "painel: sem página ainda", url: "/painel", login: EMAIL_NOVO },
+  { nome: "painel: montar página", url: "/painel/comecar", login: EMAIL_NOVO },
   {
     nome: "painel: montar página com erro",
     url: "/painel/comecar",
-    login: "novo@exemplo.com",
+    login: EMAIL_NOVO,
     antes: async (p) => {
       await enviar("form[action='/painel/comecar'] button[type=submit]")(p);
       await p.waitForSelector(".erro-campo");
@@ -308,6 +325,14 @@ before(async () => {
 });
 
 after(async () => {
+  if (REMOTO) {
+    for (const [conta, slug] of [[S.rafa, SLUG_RAFA], [S.lu, SLUG_LU]]) {
+      if (!conta) continue;
+      const r = await conta.api.post("/painel/excluir-conta", { form: { csrf: conta.csrf, confirmacao: slug } });
+      console.log(`limpeza: conta ${slug} ${r.ok() ? "apagada" : "NÃO apagada (" + r.status() + ")"}`);
+      await conta.api.dispose();
+    }
+  }
   await navegador?.close();
   await S.rafa?.api.dispose();
   derrubarServidor();
@@ -399,7 +424,7 @@ describe("teclado", () => {
   }
 
   test("dá para marcar um horário só com o teclado", async () => {
-    const { ctx, p } = await abrir({ url: "/rafa-barbeiro" }, "dark");
+    const { ctx, p } = await abrir({ url: `/${SLUG_RAFA}` }, "dark");
     await p.getByRole("link", { name: /^Corte \d/ }).focus();
     await p.keyboard.press("Enter");
     await p.waitForURL(/dia|s=/);
@@ -438,7 +463,7 @@ describe("celular", () => {
       const dispositivo = devices["Pixel 5"];
       const ctx = await navegador.newContext({ ...dispositivo, colorScheme: esquema });
       const p = await ctx.newPage();
-      await p.goto(`${ORIGEM}/rafa-barbeiro`);
+      await p.goto(`${ORIGEM}/${SLUG_RAFA}`);
       await p.getByRole("link", { name: /^Corte \d/ }).tap();
       await p.locator(`ul.dias a[href*="dia=${S.diaIso}"]`).tap();
       await p.waitForSelector("ul.chips");
@@ -475,7 +500,7 @@ describe("conteúdo e privacidade", () => {
   });
 
   test("quem só marca horário não recebe cookie, não grava nada no navegador e nada sai do site", async () => {
-    const { ctx, p, externas } = await abrir({ url: "/rafa-barbeiro" }, "dark");
+    const { ctx, p, externas } = await abrir({ url: `/${SLUG_RAFA}` }, "dark");
     await p.getByRole("link", { name: /^Corte \d/ }).click();
     await p.locator(`ul.dias a[href*="dia=${S.diaIso}"]`).click();
     await p.locator(`a.chip[href*="h=${S.slot(11)}"]`).click();
@@ -493,7 +518,7 @@ describe("conteúdo e privacidade", () => {
   });
 
   test("a URL nunca leva nome nem WhatsApp", async () => {
-    const { ctx, p } = await abrir({ url: "/rafa-barbeiro" }, "dark");
+    const { ctx, p } = await abrir({ url: `/${SLUG_RAFA}` }, "dark");
     const urls = [];
     p.on("framenavigated", (f) => urls.push(f.url()));
     await p.getByRole("link", { name: /^Corte \d/ }).click();
