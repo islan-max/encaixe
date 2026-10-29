@@ -1,0 +1,16 @@
+{% extends "publica_base.html" %}
+{% from "_campos.html" import campo %}
+{% block titulo %}Lista de espera · Encaixe{% endblock %}
+{% block conteudo %}
+<h1>Lista de espera</h1>
+<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>
+<form method="post" action="/{{ slug }}/espera" novalidate>
+  <input type="hidden" name="s" value="{{ servico.id }}">
+  <input type="hidden" name="dia" value="{{ dia.isoformat() }}">
+  <input type="hidden" name="v" value="{{ v }}">
+  <div class="isca" aria-hidden="true"><label>Não preencha <input name="site" tabindex="-1" autocomplete="off"></label></div>
+  {{ campo("espera-nome", "Seu nome", "text", valores.nome, erros.nome, None, "name", True, "", "nome") }}
+  {{ campo("espera-whatsapp", "Seu WhatsApp", "tel", valores.whatsapp, erros.whatsapp, "Com DDD.", "tel", True, "", "whatsapp") }}
+  <button class="botao" type="submit">Entrar na lista de espera</button>
+</form>
+{% endblock %}

@@ -23,6 +23,8 @@ modelos.env.globals.update(
     dia_da_semana=datas.dia_da_semana,
     dinheiro=formularios.formatar_dinheiro,
     telefone=telefone.formatar,
+    link_whatsapp=telefone.link_whatsapp,
+    consulta=formularios.consulta,
 )
 
 

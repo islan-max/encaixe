@@ -1,0 +1,27 @@
+{% extends "publica_base.html" %}
+{% block titulo %}Cancelar reserva · Encaixe{% endblock %}
+{% block conteudo %}
+{% if pode_cancelar %}
+<h1>Cancelar este horário?</h1>
+<dl class="detalhes">
+  <div><dt>Serviço</dt><dd>{{ reserva.servico_nome }}</dd></div>
+  <div><dt>Quando</dt><dd>{{ quando }}</dd></div>
+</dl>
+<p>O horário volta a ficar livre para outras pessoas.</p>
+<form method="post" action="/reserva/{{ token }}/cancelar" class="acoes">
+  <button class="botao perigo" type="submit">Sim, cancelar</button>
+  <a class="botao secundario" href="/reserva/{{ token }}">Não, voltar</a>
+</form>
+{% else %}
+<h1>Não dá para cancelar por aqui</h1>
+{% if reserva.status != "confirmada" %}
+<p>Esta reserva já não está ativa.</p>
+{% elif passou %}
+<p>Este horário já passou.</p>
+{% else %}
+<p>O prazo que {{ perfil.nome }} definiu para cancelar pela página já passou. Para cancelar agora, fale com {{ perfil.nome }} pelo WhatsApp.</p>
+<div class="acoes"><a class="botao" href="{{ link_whatsapp }}">Avisar no WhatsApp</a></div>
+{% endif %}
+<p><a href="/reserva/{{ token }}">Voltar para a reserva</a></p>
+{% endif %}
+{% endblock %}

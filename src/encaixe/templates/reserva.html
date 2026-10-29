@@ -1,0 +1,58 @@
+{% extends "publica_base.html" %}
+{% block titulo %}Sua reserva com {{ perfil.nome }} · Encaixe{% endblock %}
+{% block conteudo %}
+{% set st = reserva.status %}
+<h1>Sua reserva</h1>
+
+{% if request.query_params.get("cancelada") %}<div class="aviso ok" role="status"><p>Reserva cancelada. O horário ficou livre para outra pessoa.</p></div>{% endif %}
+{% if request.query_params.get("remarcada") %}<div class="aviso ok" role="status"><p>Horário trocado. Esta é a sua reserva nova: guarde este link.</p></div>{% endif %}
+{% if request.query_params.get("apagada") %}<div class="aviso ok" role="status"><p>Seus dados foram apagados desta reserva.</p></div>{% endif %}
+{% if request.query_params.get("nova") %}<div class="aviso ok" role="status"><p>Pronto, horário marcado! Guarde este link: é por ele que você vê, troca ou cancela.</p></div>{% endif %}
+
+<div class="estado {{ 'ok' if ativa else ('erro' if st in ('cancelada_cliente', 'cancelada_profissional', 'faltou') else 'neutro') }}" role="status">
+  <p class="estado-titulo">
+    {% if ativa %}Horário confirmado
+    {% elif st == "confirmada" %}Este horário já passou
+    {% elif st == "cancelada_cliente" %}Você cancelou esta reserva
+    {% elif st == "cancelada_profissional" %}{{ perfil.nome }} cancelou este horário
+    {% elif st == "remarcada" %}Esta reserva foi trocada por outro horário
+    {% elif st == "atendida" %}Atendimento concluído
+    {% elif st == "faltou" %}Marcada como falta
+    {% endif %}
+  </p>
+  {% if st == "cancelada_profissional" %}<p>Fale com {{ perfil.nome }} para marcar outro horário.</p>{% endif %}
+  {% if st == "remarcada" and sucessora %}<p>Novo horário: {{ data_longa(sucessora.inicio.astimezone(tz).date()) }}, {{ hora_curta(sucessora.inicio, tz) }}. Ele está no link que você recebeu ao trocar.</p>{% endif %}
+</div>
+
+<dl class="detalhes">
+  <div><dt>Serviço</dt><dd>{{ reserva.servico_nome }}</dd></div>
+  <div><dt>Quando</dt><dd>{{ quando }}</dd></div>
+  <div><dt>Duração</dt><dd>{{ reserva.duracao_min }} minutos</dd></div>
+  <div><dt>Com</dt><dd>{{ perfil.nome }}, <a href="{{ link_contato }}">{{ telefone(perfil.whatsapp) }}</a></dd></div>
+  {% if not reserva.anonimizada_em %}<div><dt>Em nome de</dt><dd>{{ reserva.cliente_nome }}</dd></div>{% endif %}
+</dl>
+
+{% if ativa %}
+<div class="acoes">
+  <a class="botao" href="{{ link_whatsapp }}">Avisar no WhatsApp</a>
+  {% if pode_cancelar %}
+  <a class="botao secundario" href="/reserva/{{ token }}/remarcar">Trocar o horário</a>
+  <a class="botao perigo" href="/reserva/{{ token }}/cancelar">Cancelar</a>
+  {% endif %}
+</div>
+{% if not pode_cancelar %}
+<div class="aviso atencao"><p>O prazo para cancelar ou trocar por aqui já passou. Se precisar mudar, fale com {{ perfil.nome }} pelo WhatsApp.</p></div>
+{% endif %}
+<p class="dica">Quem tem este link vê a reserva. Não compartilhe.</p>
+{% endif %}
+
+{% if pode_apagar %}
+<section class="cartao" aria-labelledby="apagar-titulo">
+  <h2 id="apagar-titulo">Apagar meus dados</h2>
+  <p>Seu nome e WhatsApp saem desta reserva. {{ perfil.nome }} continua vendo que houve um horário, só não sabe quem era.</p>
+  <form method="post" action="/reserva/{{ token }}/apagar"><button class="botao secundario" type="submit">Apagar meus dados</button></form>
+</section>
+{% elif not reserva.anonimizada_em and ativa %}
+<p class="dica">Depois do horário (ou se você cancelar), dá para apagar seus dados por aqui. Eles também saem sozinhos 90 dias depois do atendimento.</p>
+{% endif %}
+{% endblock %}

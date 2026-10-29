@@ -1,0 +1,9 @@
+{% extends "publica_base.html" %}
+{% block titulo %}Lista de espera · Encaixe{% endblock %}
+{% block conteudo %}
+<h1>Você está na lista de espera</h1>
+<div class="aviso ok" role="status"><p>Se abrir uma vaga em {{ data_longa(dia) }}, {{ perfil.nome }} chama você pelo WhatsApp. Isso não é uma reserva: nada está garantido.</p></div>
+<div class="acoes">
+  <a class="botao" href="/{{ slug }}{{ consulta(s=servico.id, v=v) }}">Ver outros dias</a>
+</div>
+{% endblock %}

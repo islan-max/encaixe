@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block topo %}
+<header class="topo publico">
+  <div class="conteudo">
+    <div class="perfil-topo">
+      <span class="avatar" aria-hidden="true">{{ perfil.nome[0]|upper }}</span>
+      <div>
+        <p class="nome-topo">{{ perfil.nome }}</p>
+        <p class="sub-topo">Marque seu horário</p>
+      </div>
+    </div>
+  </div>
+</header>
+{% endblock %}
+{% block rodape %}
+<footer class="rodape">
+  <div class="conteudo">
+    <span>Agendamento feito com <a href="/">Encaixe</a>, grátis para autônomos.</span>
+    <a href="/privacidade">Privacidade</a>
+  </div>
+</footer>
+{% endblock %}
