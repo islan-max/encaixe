@@ -5,8 +5,6 @@ instância (é o caso do Render free). Com várias instâncias o limite se multi
 contador compartilhado. Documentado em docs/VERIFICACAO.md (S08).
 """
 
-import logging
-import os
 import threading
 import time
 from collections import defaultdict, deque
@@ -73,23 +71,6 @@ def ip_do_cliente(request: Request) -> str:
     Sem nada disso, vale o endereço da conexão (atrás de proxy, é o do proxy: limite compartilhado).
     """
     config = carregar()
-    if os.environ.get("ENCAIXE_DEBUG_IP") == "1":  # TEMPORÁRIO: diagnóstico do deploy, sai logo
-        logging.getLogger("encaixe").warning(
-            "debug-ip client=%s cabecalhos=%s",
-            request.client.host if request.client else None,
-            {
-                k: v
-                for k, v in request.headers.items()
-                if k
-                in (
-                    "x-forwarded-for",
-                    "cf-connecting-ip",
-                    "true-client-ip",
-                    "x-real-ip",
-                    "forwarded",
-                )
-            },
-        )
     if config.client_ip_header:
         valor = request.headers.get(config.client_ip_header, "").strip()
         if valor:
