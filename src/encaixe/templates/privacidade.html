@@ -47,7 +47,10 @@
 </ul>
 
 <h2>Com quem os dados passam</h2>
-<p>Com ninguém além de quem faz o serviço funcionar: o Render (onde o programa roda), o Neon (onde o banco de dados fica, no Brasil) e, para quem escolhe entrar com o Google, o Google. Não vendemos nem cedemos dados para publicidade.</p>
+<p>Com ninguém além de quem faz o serviço funcionar: o Render (onde o programa roda), o Neon (onde o banco de dados fica) e, para quem escolhe entrar com o Google, o Google. Não vendemos nem cedemos dados para publicidade.</p>
+
+<h2>Onde os dados ficam</h2>
+<p>Em servidores nos <strong>Estados Unidos</strong> (Render, na Virgínia, e Neon, na região AWS us-east). Isso quer dizer que os dados saem do Brasil. Se isso não serve para você, não use esta instância pública: o Encaixe é de código aberto e dá para <a href="https://github.com/islan-max/encaixe/blob/main/docs/instalacao.md">hospedar o seu</a> onde quiser.</p>
 
 <h2>Seus direitos</h2>
 <ul>
@@ -59,5 +62,5 @@
 <p>Senhas guardadas com Argon2id; links de reserva impossíveis de adivinhar e guardados só como código irreversível; conexão protegida (HTTPS); cada profissional só enxerga os próprios dados, o que é garantido no próprio banco; limite de tentativas contra abuso. Nenhum sistema é perfeito: se algo der errado com os seus dados, o mantenedor avisa o profissional afetado.</p>
 
 <h2>Contato e mudanças</h2>
-<p>Dúvidas e pedidos: abra uma conversa em <a href="https://github.com/islan-max/encaixe/issues">github.com/islan-max/encaixe/issues</a> (público: não escreva dados pessoais lá){% if contato_email %}, ou escreva para <a href="mailto:{{ contato_email }}">{{ contato_email }}</a>{% endif %}. Se esta política mudar, a data lá em cima muda e o histórico fica visível no repositório.</p>
+<p>Dúvidas e pedidos: abra uma conversa em <a href="https://github.com/islan-max/encaixe/issues">github.com/islan-max/encaixe/issues</a> (público: não escreva dados pessoais lá){% if contato_email %}, ou escreva para <a href="mailto:{{ contato_email }}">{{ contato_email }}</a>{% endif %}. {% if not contato_email %}Esta instância ainda não tem um canal privado para pedidos sobre dados pessoais: quem marcou um horário apaga os próprios dados pela página da reserva, e o profissional apaga os dele (e os dos clientes) em Perfil &rarr; Excluir minha conta. {% endif %}Se esta política mudar, a data lá em cima muda e o histórico fica visível no repositório.</p>
 {% endblock %}
