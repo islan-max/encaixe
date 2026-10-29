@@ -67,9 +67,12 @@ def test_politica_e_termos_existem_e_dizem_o_que_o_programa_faz(banco):
 
 
 def test_contato_por_email_so_aparece_se_configurado(banco, monkeypatch):
-    assert "mailto:" not in cliente().get("/privacidade").text
+    sem = cliente().get("/privacidade").text
+    assert "mailto:" not in sem and "ainda não tem um canal privado" in sem
     monkeypatch.setenv("CONTATO_EMAIL", "contato@exemplo.com")
-    assert 'href="mailto:contato@exemplo.com"' in cliente().get("/privacidade").text
+    com = cliente().get("/privacidade").text
+    assert 'href="mailto:contato@exemplo.com"' in com and "canal privado" not in com
+    assert "Estados Unidos" in com  # a política diz onde os dados ficam
 
 
 def test_rodape_leva_a_politica_e_aos_termos(banco):

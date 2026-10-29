@@ -73,7 +73,7 @@ Qualquer máquina com Python 3.12 e um Postgres 15+ serve:
 uv sync --no-dev
 export DATABASE_URL=postgresql://... ENCAIXE_ENV=producao SECRET_KEY=... BASE_URL=https://seu.dominio
 uv run python -m encaixe.migrate
-uv run uvicorn encaixe.app:app --host 0.0.0.0 --port 8000
+uv run uvicorn encaixe.app:app --host 0.0.0.0 --port 8000 --no-access-log
 ```
 
 Ponha na frente um proxy com HTTPS (Caddy, nginx, Cloudflare) e acerte `PROXY_HOPS`. O usuário do banco precisa poder criar papéis (`create role`): as migrações criam `encaixe_painel` e `encaixe_publico` e o app troca de papel a cada requisição.
@@ -88,6 +88,7 @@ Com um domínio (cerca de R$ 40 por ano) você pode apontá-lo para o Render e, 
 - **Atualizar:** faça `git pull` do repositório original no seu fork; o Render reimplanta e as migrações novas rodam sozinhas.
 - **Dados de terceiros:** quem hospeda é o operador dos dados dos clientes dos profissionais. Mantenha a política de privacidade (`src/encaixe/templates/privacidade.html`) coerente com o que você de fato faz (por exemplo, a região do banco) e um canal de contato real em `CONTATO_EMAIL`.
 - **Segredos:** nunca no Git. O `gitleaks` roda no CI.
+- **Logs:** o link da reserva é um segredo e vai no caminho da URL. O app roda com `--no-access-log` para não gravá-lo; mas a hospedagem (o roteador do Render) pode registrar o caminho nos logs dela, por isso o painel do Render deve ser acessível só por você.
 
 ## Problemas comuns
 

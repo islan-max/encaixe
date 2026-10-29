@@ -19,7 +19,7 @@ Instância do modelo de contexto do guia. Sem segredos. "Desconhecido" = ainda n
 - Comandos: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run pytest`.
 - Autenticação: e-mail e senha (Argon2id) com códigos de recuperação e login com Google (OIDC); sessão em cookie, guardada no banco. Cliente final não tem conta: acessa a reserva por link secreto.
 - Banco: Postgres (Neon free em São Paulo). Isolamento por profissional com RLS. Sem armazenamento de arquivos nem upload.
-- Hospedagem: Render free (aplicação, runtime Python, `render.yaml`) + Neon free (banco). A instância pública é uma demonstração gratuita sem garantia de disponibilidade. Região do banco e do Render: definida no deploy (ver `docs/instalacao.md`).
+- Hospedagem: Render free (aplicação, runtime Python, `render.yaml`) + Neon free (banco). A instância pública é uma demonstração gratuita sem garantia de disponibilidade. Região: Render em Virginia e Neon em AWS us-east (mesma região, para o app não somar ~120 ms por consulta). Os dados ficam nos EUA: a política de privacidade diz isso (transferência internacional).
 - Serviços externos: Neon, Render, Google (login, opcional), GitHub Actions (CI, ping de 10 min e limpeza diária). Nenhum serviço de e-mail ativo; e-mail é fase 2 (`docs/fase-2.md`).
 - Variáveis sensíveis (só nomes): `DATABASE_URL`, `SECRET_KEY`, `CRON_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; `APP_URL` e `CRON_SECRET` também nos segredos do GitHub. `CONTATO_EMAIL`, `BASE_URL` e `PROXY_HOPS` não são segredo. Exemplo sem valores em `.env.example`.
 
