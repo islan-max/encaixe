@@ -1,0 +1,99 @@
+{% extends "publica_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_publica_partes.html" import resumo, lista_de_dias, chips %}
+{% block titulo %}Marcar horário com {{ perfil.nome }} · Encaixe{% endblock %}
+{% block descricao %}Escolha o serviço, o dia e o horário com {{ perfil.nome }}. Sem cadastro.{% endblock %}
+{% block conteudo %}
+
+{% if etapa == "sem_servicos" %}
+<h1>Ainda não dá para marcar por aqui</h1>
+<p>{{ perfil.nome }} ainda não cadastrou os serviços. Fale direto pelo WhatsApp.</p>
+<a class="botao" href="{{ link_whatsapp(perfil.whatsapp) }}">Falar no WhatsApp</a>
+
+{% elif etapa == "servico" %}
+<h1>O que você quer marcar?</h1>
+<ul class="escolhas" aria-label="Serviços">
+  {% for s in servicos if s.ativo %}
+  <li>
+    <a href="/{{ slug }}{{ consulta(s=s.id, v=v) }}">
+      <strong>{{ s.nome }}</strong>
+      <span class="dica">{{ s.duracao_min }} min{% if s.vagas > 1 %} · aula em grupo{% endif %}{% if s.preco_centavos is not none %} · {{ dinheiro(s.preco_centavos) }}{% endif %}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+{% elif etapa == "dia" %}
+<h1>Escolha o dia</h1>
+{{ resumo(servico) }}
+{% if not unico %}<p><a href="/{{ slug }}{{ consulta(v=v) }}">Trocar serviço</a></p>{% endif %}
+{% if fuso_aviso %}<p class="dica">Os horários são no fuso de {{ fuso_aviso }}.</p>{% endif %}
+{{ lista_de_dias(dias, "/" ~ slug, servico.id, v, mais, pg) }}
+
+{% elif etapa == "horario" or etapa == "conflito" %}
+<h1>{{ data_longa(dia) }}</h1>
+{{ resumo(servico) }}
+{% if etapa == "conflito" %}
+<div class="aviso erro" role="alert"><p>Esse horário acabou de ser ocupado por outra pessoa. Seus dados continuam aqui: escolha outro horário e confirme.</p></div>
+{% elif aviso %}
+<div class="aviso atencao" role="alert"><p>{{ aviso }}</p></div>
+{% endif %}
+{% if fuso_aviso %}<p class="dica">Os horários são no fuso de {{ fuso_aviso }}.</p>{% endif %}
+{% set livres = horarios | selectattr("reservavel") | list %}
+{% set cheios = horarios | selectattr("motivo", "equalto", "lotado") | list %}
+
+{% if livres %}
+  <h2>Horários livres</h2>
+  {% if etapa == "conflito" %}
+  <form method="post" action="/{{ slug }}/reservar">
+    <input type="hidden" name="s" value="{{ servico.id }}">
+    <input type="hidden" name="v" value="{{ v }}">
+    <input type="hidden" name="nome" value="{{ valores.nome }}">
+    <input type="hidden" name="whatsapp" value="{{ valores.whatsapp }}">
+    <input type="hidden" name="email" value="{{ valores.email }}">
+    <ul class="chips" aria-label="Horários">
+      {% for h in livres %}<li><button class="chip" type="submit" name="h" value="{{ h.inicio.timestamp()|int }}">{{ hora_curta(h.inicio, tz) }}</button></li>{% endfor %}
+    </ul>
+  </form>
+  {% else %}
+  {{ chips(horarios, tz, "/" ~ slug, servico.id, dia, v) }}
+  {% endif %}
+{% else %}
+  <div class="aviso atencao"><p>Não há horário livre neste dia.</p></div>
+{% endif %}
+<p><a href="/{{ slug }}{{ consulta(s=servico.id, v=v) }}">Ver outros dias</a></p>
+
+{% if cheios or not livres %}
+<section class="cartao" aria-labelledby="espera-titulo">
+  <h2 id="espera-titulo">Quer ser avisado se abrir uma vaga?</h2>
+  <p>Deixe seu nome e WhatsApp. Se alguém cancelar, {{ perfil.nome }} chama você por lá. Não é uma reserva.</p>
+  <form method="post" action="/{{ slug }}/espera" novalidate>
+    <input type="hidden" name="s" value="{{ servico.id }}">
+    <input type="hidden" name="dia" value="{{ dia.isoformat() }}">
+    <input type="hidden" name="v" value="{{ v }}">
+    <div class="isca" aria-hidden="true"><label>Não preencha <input name="site" tabindex="-1" autocomplete="off"></label></div>
+    {{ campo("espera-nome", "Seu nome", "text", "", None, None, "name", True, "", "nome") }}
+    {{ campo("espera-whatsapp", "Seu WhatsApp", "tel", "", None, "Com DDD.", "tel", True, "", "whatsapp") }}
+    <button class="botao secundario" type="submit">Entrar na lista de espera</button>
+  </form>
+</section>
+{% endif %}
+
+{% elif etapa == "dados" %}
+<h1>Quase lá</h1>
+{{ resumo(servico, data_longa(dia) ~ ", " ~ hora_curta(alvo.inicio, tz)) }}
+<p><a href="/{{ slug }}{{ consulta(s=servico.id, dia=dia.isoformat(), v=v) }}">Trocar horário</a></p>
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>{% endif %}
+<form method="post" action="/{{ slug }}/reservar" novalidate>
+  <input type="hidden" name="s" value="{{ servico.id }}">
+  <input type="hidden" name="h" value="{{ alvo.inicio.timestamp()|int }}">
+  <input type="hidden" name="v" value="{{ v }}">
+  <div class="isca" aria-hidden="true"><label>Não preencha <input name="site" tabindex="-1" autocomplete="off"></label></div>
+  {{ campo("nome", "Seu nome", "text", valores.nome, erros.nome, None, "name") }}
+  {{ campo("whatsapp", "Seu WhatsApp", "tel", valores.whatsapp, erros.whatsapp, "Com DDD. " ~ perfil.nome ~ " usa para confirmar e lembrar do horário.", "tel") }}
+  {{ campo("email", "E-mail (opcional)", "email", valores.email, erros.email, "Não mandamos e-mail. Só guarde se quiser que " ~ perfil.nome ~ " tenha mais um jeito de falar com você.", "email", False) }}
+  <button class="botao" type="submit">Confirmar horário</button>
+  <p class="dica" style="margin-top:.75rem">Guardamos seu nome e WhatsApp só para {{ perfil.nome }} cuidar deste horário. Você pode apagar depois, pela página da reserva. <a href="/privacidade">Política de privacidade</a>.</p>
+</form>
+{% endif %}
+{% endblock %}

@@ -3,6 +3,7 @@
 import re
 import uuid
 from datetime import date, time
+from urllib.parse import urlencode
 
 
 def texto(valor: str, minimo: int, maximo: int) -> str | None:
@@ -52,3 +53,9 @@ def uuid_valido(valor: str) -> str | None:
         return str(uuid.UUID(valor))
     except ValueError:
         return None
+
+
+def consulta(**partes) -> str:
+    """?a=1&b=2, sem os valores vazios; vazio se não sobrou nada. Serve para montar links."""
+    limpas = {k: v for k, v in partes.items() if v not in (None, "")}
+    return "?" + urlencode(limpas) if limpas else ""

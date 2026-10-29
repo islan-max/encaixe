@@ -335,7 +335,7 @@ def test_publico_nao_cria_reserva_em_nome_de_outro_profissional(novo_profissiona
         )
 
 
-def test_publico_so_cancela_nunca_marca_atendida(novo_profissional, novo_servico):
+def test_publico_so_cancela_pela_funcao_e_nunca_atualiza_direto(novo_profissional, novo_servico):
     pro = novo_profissional()
     token = novo_token()
     with publico(pro) as conn:
@@ -349,15 +349,40 @@ def test_publico_so_cancela_nunca_marca_atendida(novo_profissional, novo_servico
             cliente_email=None,
             token=token,
         )
-    with pytest.raises(psycopg.errors.InsufficientPrivilege), publico(pro, token) as conn:
-        conn.execute("update reservas set status = 'atendida' where id = %s", (r["id"],))
-    with pytest.raises(psycopg.errors.InsufficientPrivilege), publico(pro, token) as conn:
-        conn.execute("update reservas set inicio = inicio + interval '1 day'")
+    # O papel público não atualiza nada direto: nem o estado, nem o horário, nem os dados.
+    for sql in (
+        "update reservas set status = 'atendida'",
+        "update reservas set inicio = inicio + interval '1 day'",
+        "update reservas set cliente_nome = 'Outro'",
+    ):
+        with pytest.raises(psycopg.errors.InsufficientPrivilege), publico(pro, token) as conn:
+            conn.execute(sql)
+    # O que ele pode é pedir as transições certas, e só da reserva de quem tem o link.
     with publico(pro, token) as conn:
-        feito = conn.execute(
-            "update reservas set status = 'cancelada_cliente' where id = %s", (r["id"],)
+        assert (
+            conn.execute(
+                "select cancelar_pelo_cliente(decode(%s, 'hex')) as ok", (hash_do_token("errado"),)
+            ).fetchone()["ok"]
+            is False
         )
-        assert feito.rowcount == 1
+        assert (
+            conn.execute(
+                "select cancelar_pelo_cliente(decode(%s, 'hex')) as ok", (hash_do_token(token),)
+            ).fetchone()["ok"]
+            is True
+        )
+        assert (
+            conn.execute(
+                "select cancelar_pelo_cliente(decode(%s, 'hex')) as ok", (hash_do_token(token),)
+            ).fetchone()["ok"]
+            is False
+        )
+        assert (
+            conn.execute("select status from reservas where id = %s", (r["id"],)).fetchone()[
+                "status"
+            ]
+            == "cancelada_cliente"
+        )
 
 
 def test_publico_nao_le_servico_inativo_nem_dados_de_outro_profissional(

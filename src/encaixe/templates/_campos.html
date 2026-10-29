@@ -1,7 +1,7 @@
-{% macro campo(id, rotulo, tipo="text", valor="", erro=None, dica=None, autocomplete=None, obrigatorio=True, extra="") %}
+{% macro campo(id, rotulo, tipo="text", valor="", erro=None, dica=None, autocomplete=None, obrigatorio=True, extra="", nome=None) %}
 <div class="campo">
   <label for="{{ id }}">{{ rotulo }}</label>
-  <input id="{{ id }}" name="{{ id }}" type="{{ tipo }}" value="{{ valor or '' }}"
+  <input id="{{ id }}" name="{{ nome or id }}" type="{{ tipo }}" value="{{ valor or '' }}"
          {% if obrigatorio %}required{% endif %}
          {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
          {% if tipo in ('email', 'password') %}autocapitalize="none" spellcheck="false"{% endif %}

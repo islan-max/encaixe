@@ -1,0 +1,38 @@
+{% macro resumo(servico, quando=None) %}
+<div class="resumo">
+  <p><strong>{{ servico.nome }}</strong> · {{ servico.duracao_min }} min{% if servico.preco_centavos is not none %} · {{ dinheiro(servico.preco_centavos) }}{% endif %}{% if quando %}<br>{{ quando }}{% endif %}</p>
+</div>
+{% endmacro %}
+
+{% macro lista_de_dias(dias, base, s, v, mais, pg) %}
+{% if dias %}
+<ul class="dias" aria-label="Dias com horário">
+  {% for d in dias %}
+  <li>
+    <a href="{{ base }}{{ consulta(s=s, dia=d.dia.isoformat(), v=v) }}">
+      <span>{{ data_longa(d.dia) }}</span>
+      <span class="dica">{% if d.livres %}{{ d.livres }} horário{{ "s" if d.livres != 1 }}{% if d.vagas != d.livres %} · {{ d.vagas }} vagas{% endif %}{% else %}cheio · dá para entrar na espera{% endif %}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="aviso atencao"><p>Não há horários livres neste período.</p></div>
+{% endif %}
+<p class="navegacao">
+  {% if pg > 0 %}<a href="{{ base }}{{ consulta(s=s, pg=(pg - 1 if pg > 1 else ""), v=v) }}">Ver dias anteriores</a>{% endif %}
+  {% if mais %}<a href="{{ base }}{{ consulta(s=s, pg=pg + 1, v=v) }}">Ver mais dias</a>{% endif %}
+</p>
+{% endmacro %}
+
+{% macro chips(horarios, tz, base, s, dia, v) %}
+<ul class="chips" aria-label="Horários">
+  {% for h in horarios %}
+    {% if h.reservavel %}
+    <li><a class="chip" href="{{ base }}{{ consulta(s=s, dia=dia.isoformat(), h=h.inicio.timestamp()|int, v=v) }}">{{ hora_curta(h.inicio, tz) }}{% if h.vagas_total > 1 %}<span class="dica"> · {{ h.vagas_livres }} vaga{{ "s" if h.vagas_livres != 1 }}</span>{% endif %}</a></li>
+    {% elif h.motivo == "lotado" %}
+    <li><span class="chip cheio">{{ hora_curta(h.inicio, tz) }} · cheio</span></li>
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endmacro %}

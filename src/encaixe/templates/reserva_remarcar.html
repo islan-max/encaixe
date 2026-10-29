@@ -1,0 +1,28 @@
+{% extends "publica_base.html" %}
+{% from "_publica_partes.html" import resumo, lista_de_dias, chips %}
+{% block titulo %}Trocar o horário · Encaixe{% endblock %}
+{% block conteudo %}
+{% set base = "/reserva/" ~ token ~ "/remarcar" %}
+<h1>Trocar o horário</h1>
+<p>Hoje: <strong>{{ quando }}</strong>. Escolha o novo horário; só depois de confirmar o antigo é liberado.</p>
+{% if aviso %}<div class="aviso atencao" role="alert"><p>{{ aviso }}</p></div>{% endif %}
+
+{% if etapa == "dia" %}
+<h2>Escolha o dia</h2>
+{{ lista_de_dias(dias, base, "", "", mais, pg) }}
+
+{% elif etapa == "horario" %}
+<h2>{{ data_longa(dia) }}</h2>
+{{ chips(horarios, tz, base, "", dia, "") }}
+<p><a href="{{ base }}">Ver outros dias</a></p>
+
+{% elif etapa == "confirmar" %}
+{{ resumo(servico, data_longa(dia) ~ ", " ~ hora_curta(alvo.inicio, tz)) }}
+<form method="post" action="{{ base }}" class="acoes">
+  <input type="hidden" name="h" value="{{ alvo.inicio.timestamp()|int }}">
+  <button class="botao" type="submit">Confirmar o novo horário</button>
+  <a class="botao secundario" href="{{ base }}{{ consulta(dia=dia.isoformat()) }}">Escolher outro</a>
+</form>
+{% endif %}
+<p><a href="/reserva/{{ token }}">Voltar para a reserva</a></p>
+{% endblock %}

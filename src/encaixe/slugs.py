@@ -11,7 +11,7 @@ RESERVADOS = frozenset(
     entrar cadastrar cadastro sair login logout recuperar painel reserva reservas r static saude
     interno privacidade termos robots sitemap favicon admin administrador api app www encaixe
     ajuda suporte contato conta contas sobre inicio home index erro 404 500 status docs
-    blog preco precos planos sistema root null undefined health ping
+    blog preco precos planos sistema root null undefined health ping redoc swagger openapi
     """.split()
 )
 

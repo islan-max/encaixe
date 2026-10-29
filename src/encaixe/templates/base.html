@@ -13,6 +13,7 @@
 </head>
 <body>
   <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+  {% block topo %}
   <header class="topo">
     <div class="conteudo">
       <a class="marca" href="/">
@@ -35,11 +36,13 @@
       </nav>
     </div>
   </header>
+  {% endblock %}
   <main id="conteudo" tabindex="-1">
     <div class="conteudo">
       {% block conteudo %}{% endblock %}
     </div>
   </main>
+  {% block rodape %}
   <footer class="rodape">
     <div class="conteudo">
       <span>Encaixe é grátis e de código aberto.</span>
@@ -47,5 +50,6 @@
       <a href="/termos">Termos de uso</a>
     </div>
   </footer>
+  {% endblock %}
 </body>
 </html>

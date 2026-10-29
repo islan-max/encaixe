@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as ErroHTTP
 
-from encaixe import rotas_contas, rotas_painel, rotas_site
+from encaixe import rotas_contas, rotas_painel, rotas_publicas, rotas_site
 from encaixe.google import ClienteGoogle
 from encaixe.seguranca import Seguranca
 from encaixe.web import PASTA, PrecisaEntrar, pagina
@@ -21,14 +21,16 @@ def create_app() -> FastAPI:
     app.state.google = ClienteGoogle()
     app.add_middleware(Seguranca)
     app.mount("/static", StaticFiles(directory=PASTA / "static"), name="static")
-    app.include_router(rotas_site.roteador)
-    app.include_router(rotas_contas.roteador)
-    app.include_router(rotas_painel.roteador)
 
     @app.api_route("/saude", methods=["GET", "HEAD"])
     def saude() -> dict[str, str]:
         # Sem tocar no banco: serve de ping para manter o Render acordado sem gastar o Neon.
         return {"estado": "ok"}
+
+    app.include_router(rotas_site.roteador)
+    app.include_router(rotas_contas.roteador)
+    app.include_router(rotas_painel.roteador)
+    app.include_router(rotas_publicas.roteador)  # por último: /{slug} pega tudo que sobrar
 
     @app.exception_handler(PrecisaEntrar)
     def precisa_entrar(request: Request, _: PrecisaEntrar):
