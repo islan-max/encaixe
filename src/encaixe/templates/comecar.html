@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_campos.html" import campo %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Montar minha página · Encaixe{% endblock %}
 {% block robots %}<meta name="robots" content="noindex">{% endblock %}
 {% block conteudo %}

@@ -1,6 +1,6 @@
 {% extends "painel_base.html" %}
 {% from "_campos.html" import campo %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Perfil · Encaixe{% endblock %}
 {% block painel %}
 <h1>Perfil</h1>
@@ -33,7 +33,7 @@
 </form>
 
 {% if por_senha %}
-<section class="cartao" id="codigos" aria-labelledby="cod-titulo" style="margin-top:2rem">
+<section class="cartao separado" id="codigos" aria-labelledby="cod-titulo">
   <h2 id="cod-titulo">Códigos de recuperação</h2>
   <p>Gerar códigos novos apaga os antigos. Confirme com a sua senha.</p>
   <form method="post" action="/painel/codigos">
@@ -44,7 +44,7 @@
 </section>
 {% endif %}
 
-<section class="cartao" aria-labelledby="excluir-titulo" style="margin-top:2rem">
+<section class="cartao separado" aria-labelledby="excluir-titulo">
   <h2 id="excluir-titulo">Excluir minha conta</h2>
   <p>Apaga a sua página, as reservas e os dados dos seus clientes. Não tem volta.</p>
   <a class="botao perigo" href="/painel/excluir-conta">Excluir minha conta</a>

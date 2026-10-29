@@ -1,6 +1,6 @@
 {% extends "painel_base.html" %}
 {% from "_campos.html" import campo %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Folgas · Encaixe{% endblock %}
 {% block painel %}
 <h1>Folgas e férias</h1>
@@ -28,7 +28,7 @@
     </div>
     <form method="post" action="/painel/folgas/{{ f.id }}/apagar">
       {{ csrf_campo() }}
-      <button class="botao secundario pequeno" type="submit" aria-label="Apagar a folga de {{ data_e_hora(f.inicio, fuso) }}">Apagar</button>
+      <button class="botao secundario pequeno" type="submit">Apagar<span class="sr-only"> a folga de {{ data_e_hora(f.inicio, fuso) }}</span></button>
     </form>
   </li>
   {% else %}

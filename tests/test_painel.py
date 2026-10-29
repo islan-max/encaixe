@@ -436,3 +436,25 @@ def test_formularios():
     assert formularios.inteiro(" 30 ", 5, 480) == 30 and formularios.inteiro("4", 5, 480) is None
     assert formularios.texto("  oi   mundo \n", 2, 20) == "oi mundo"
     assert formularios.uuid_valido("../x") is None
+
+
+def test_todo_formulario_do_painel_carrega_o_proprio_token_csrf(rafa):
+    """Pega o erro clássico: macro importada sem contexto renderiza o token vazio, e o formulário
+    só falha no navegador (os testes que usam o token do menu não percebem)."""
+    paginas = [
+        "/painel",
+        "/painel/servicos",
+        "/painel/horarios",
+        "/painel/regras",
+        "/painel/folgas",
+        "/painel/divulgacao",
+        "/painel/perfil",
+        "/painel/excluir-conta",
+    ]
+    for caminho in paginas:
+        html = rafa.get(caminho).text
+        formularios = re.findall(r"<form[^>]*method=\"post\"[^>]*>(.*?)</form>", html, re.S)
+        assert formularios, caminho
+        for corpo in formularios:
+            tokens = re.findall(r'name="csrf" value="([^"]*)"', corpo)
+            assert tokens == [rafa.csrf], f"{caminho}: formulário sem o token da sessão"

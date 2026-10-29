@@ -1,6 +1,6 @@
 {% extends "painel_base.html" %}
 {% from "_campos.html" import campo %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Serviços · Encaixe{% endblock %}
 {% block painel %}
 <h1>Serviços</h1>
@@ -14,11 +14,11 @@
       <span class="dica">{{ s.duracao_min }} min{% if s.folga_min %} + {{ s.folga_min }} min de folga{% endif %}{% if s.vagas > 1 %} · aula com {{ s.vagas }} vagas{% endif %}{% if s.preco_centavos is not none %} · {{ dinheiro(s.preco_centavos) }}{% endif %}</span>
     </div>
     <div class="item-acoes">
-      <a class="botao secundario pequeno" href="/painel/servicos/{{ s.id }}" aria-label="Editar {{ s.nome }}">Editar</a>
+      <a class="botao secundario pequeno" href="/painel/servicos/{{ s.id }}">Editar<span class="sr-only"> {{ s.nome }}</span></a>
       <form method="post" action="/painel/servicos/{{ s.id }}/ativo">
         {{ csrf_campo() }}
         <input type="hidden" name="ativo" value="{{ '0' if s.ativo else '1' }}">
-        <button class="botao secundario pequeno" type="submit" aria-label="{{ 'Desativar' if s.ativo else 'Ativar' }} {{ s.nome }}">{{ "Desativar" if s.ativo else "Ativar" }}</button>
+        <button class="botao secundario pequeno" type="submit">{{ "Desativar" if s.ativo else "Ativar" }}<span class="sr-only"> {{ s.nome }}</span></button>
       </form>
     </div>
   </li>

@@ -1,0 +1,13 @@
+{
+  "name": "encaixe-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Testes de acessibilidade e de fluxo no navegador (Playwright e axe-core). Não fazem parte do app.",
+  "scripts": {
+    "test:a11y": "node --test --test-timeout=120000 test/a11y.test.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "playwright": "1.64.1"
+  }
+}

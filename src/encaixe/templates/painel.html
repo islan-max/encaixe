@@ -1,5 +1,5 @@
 {% extends "painel_base.html" %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Agenda · Encaixe{% endblock %}
 {% block painel %}
 {% set dia_txt = escolhido.isoformat() %}
@@ -53,26 +53,26 @@
         {% if ativa and not comecou and r.cliente_whatsapp %}
         <form method="post" action="/painel/reservas/{{ r.id }}/lembrar">
           {{ csrf_campo() }}
-          <button class="botao pequeno" type="submit" aria-label="Lembrar {{ r.cliente_nome }} no WhatsApp">Lembrar no WhatsApp</button>
+          <button class="botao pequeno" type="submit">Lembrar no WhatsApp<span class="sr-only"> {{ r.cliente_nome }}</span></button>
         </form>
         {% endif %}
         {% if ativa and comecou %}
         <form method="post" action="/painel/reservas/{{ r.id }}/estado">
           {{ csrf_campo() }}<input type="hidden" name="novo" value="atendida"><input type="hidden" name="dia" value="{{ dia_txt }}">
-          <button class="botao pequeno" type="submit" aria-label="Marcar que {{ r.cliente_nome }} foi atendido">Atendeu</button>
+          <button class="botao pequeno" type="submit">Atendeu<span class="sr-only">: {{ r.cliente_nome }}</span></button>
         </form>
         <form method="post" action="/painel/reservas/{{ r.id }}/estado">
           {{ csrf_campo() }}<input type="hidden" name="novo" value="faltou"><input type="hidden" name="dia" value="{{ dia_txt }}">
-          <button class="botao secundario pequeno" type="submit" aria-label="Marcar que {{ r.cliente_nome }} faltou">Faltou</button>
+          <button class="botao secundario pequeno" type="submit">Faltou<span class="sr-only">: {{ r.cliente_nome }}</span></button>
         </form>
         {% elif r.status in ("atendida", "faltou") %}
         <form method="post" action="/painel/reservas/{{ r.id }}/estado">
           {{ csrf_campo() }}<input type="hidden" name="novo" value="{{ 'faltou' if r.status == 'atendida' else 'atendida' }}"><input type="hidden" name="dia" value="{{ dia_txt }}">
-          <button class="botao secundario pequeno" type="submit" aria-label="Corrigir: marcar {{ r.cliente_nome }} como {{ 'faltou' if r.status == 'atendida' else 'atendido' }}">Corrigir para {{ "faltou" if r.status == "atendida" else "atendeu" }}</button>
+          <button class="botao secundario pequeno" type="submit">Corrigir para {{ "faltou" if r.status == "atendida" else "atendeu" }}<span class="sr-only">: {{ r.cliente_nome }}</span></button>
         </form>
         {% endif %}
         {% if ativa and not comecou %}
-        <a class="botao perigo pequeno" href="/painel/reservas/{{ r.id }}/cancelar?dia={{ dia_txt }}" aria-label="Cancelar o horário de {{ r.cliente_nome }}">Cancelar</a>
+        <a class="botao perigo pequeno" href="/painel/reservas/{{ r.id }}/cancelar?dia={{ dia_txt }}">Cancelar<span class="sr-only"> horário de {{ r.cliente_nome }}</span></a>
         {% endif %}
       </div>
     </div>
@@ -97,11 +97,11 @@
       <div class="item-acoes">
         <form method="post" action="/painel/espera/{{ e.id }}/chamar">
           {{ csrf_campo() }}
-          <button class="botao pequeno" type="submit" aria-label="Chamar {{ e.nome }} no WhatsApp">Chamar</button>
+          <button class="botao pequeno" type="submit">Chamar<span class="sr-only"> {{ e.nome }} no WhatsApp</span></button>
         </form>
         <form method="post" action="/painel/espera/{{ e.id }}/apagar">
           {{ csrf_campo() }}<input type="hidden" name="dia" value="{{ dia_txt }}">
-          <button class="botao secundario pequeno" type="submit" aria-label="Tirar {{ e.nome }} da lista de espera">Tirar da lista</button>
+          <button class="botao secundario pequeno" type="submit">Tirar da lista<span class="sr-only">: {{ e.nome }}</span></button>
         </form>
       </div>
     </li>

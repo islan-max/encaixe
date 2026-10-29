@@ -1,5 +1,5 @@
 {% extends "painel_base.html" %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Cancelar horário · Encaixe{% endblock %}
 {% block painel %}
 <h1>Cancelar este horário?</h1>
