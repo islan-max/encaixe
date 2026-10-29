@@ -3,6 +3,7 @@
 import psycopg
 
 from encaixe.categorias import CATEGORIAS, HORARIO_PADRAO
+from encaixe.divulgacao import ORIGENS_INICIAIS, criar_origem
 
 
 class SlugEmUso(Exception):
@@ -36,5 +37,7 @@ def criar_perfil(
                 " values (%s, %s, %s, %s)",
                 (pro, dia, inicio, fim),
             )
+    for nome_da_origem in ORIGENS_INICIAIS:
+        criar_origem(conn, str(pro), nome_da_origem)
     conn.execute("update contas set profissional_id = %s where id = %s", (pro, conta_id))
     return str(pro)

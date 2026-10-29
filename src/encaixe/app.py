@@ -3,7 +3,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as ErroHTTP
 
-from encaixe import rotas_agenda, rotas_contas, rotas_painel, rotas_publicas, rotas_site
+from encaixe import (
+    rotas_agenda,
+    rotas_contas,
+    rotas_divulgacao,
+    rotas_painel,
+    rotas_publicas,
+    rotas_site,
+)
 from encaixe.google import ClienteGoogle
 from encaixe.seguranca import Seguranca
 from encaixe.web import PASTA, PrecisaEntrar, pagina
@@ -31,6 +38,7 @@ def create_app() -> FastAPI:
     app.include_router(rotas_contas.roteador)
     app.include_router(rotas_painel.roteador)
     app.include_router(rotas_agenda.roteador)
+    app.include_router(rotas_divulgacao.roteador)
     app.include_router(rotas_publicas.roteador)  # por último: /{slug} pega tudo que sobrar
 
     @app.exception_handler(PrecisaEntrar)
