@@ -1,0 +1,38 @@
+name: Manutenção
+
+# Mantém a instância gratuita acordada e roda a limpeza diária de dados.
+# Precisa de dois segredos no repositório: APP_URL (ex.: https://encaixe.onrender.com) e CRON_SECRET.
+# Sem APP_URL, os jobs só avisam e saem (é o caso de quem clonou o repositório).
+on:
+  schedule:
+    - cron: "*/10 * * * *" # ping: o Render free hiberna depois de 15 min sem acesso
+    - cron: "17 6 * * *" # limpeza diária (03:17 em Brasília)
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '*/10 * * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acordar o app
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then echo "APP_URL não definido: nada a fazer"; exit 0; fi
+          # /saude não toca o banco: o Neon continua dormindo e não gasta a cota.
+          curl --fail --silent --show-error --max-time 90 --retry 2 "$APP_URL/saude"
+
+  limpeza:
+    if: github.event_name == 'workflow_dispatch' || github.event.schedule == '17 6 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Limpar dados vencidos
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ] || [ -z "$CRON_SECRET" ]; then echo "segredos não definidos: nada a fazer"; exit 0; fi
+          curl --fail --silent --show-error --max-time 120 --retry 2 \
+            -X POST -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/interno/limpeza"

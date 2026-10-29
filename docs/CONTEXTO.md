@@ -19,9 +19,9 @@ Instância do modelo de contexto do guia. Sem segredos. "Desconhecido" = ainda n
 - Comandos: `uv sync`, `uv run ruff check`, `uv run ruff format --check`, `uv run pytest`.
 - Autenticação: e-mail e senha (Argon2id) com códigos de recuperação e login com Google (OIDC); sessão em cookie, guardada no banco. Cliente final não tem conta: acessa a reserva por link secreto.
 - Banco: Postgres (Neon free em São Paulo). Isolamento por profissional com RLS. Sem armazenamento de arquivos nem upload.
-- Hospedagem: Render free (aplicação) + Neon free (banco). A instância pública é uma demonstração gratuita sem garantia de disponibilidade.
-- Serviços externos: Neon, Render, Google (login), GitHub Actions (CI e ping). Nenhum serviço de e-mail ativo; e-mail é opcional (fase 2).
-- Variáveis sensíveis (só nomes): `DATABASE_URL`, `SECRET_KEY`, `CRON_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. Gerenciadas no painel do Render e nos segredos do GitHub.
+- Hospedagem: Render free (aplicação, runtime Python, `render.yaml`) + Neon free (banco). A instância pública é uma demonstração gratuita sem garantia de disponibilidade. Região do banco e do Render: definida no deploy (ver `docs/instalacao.md`).
+- Serviços externos: Neon, Render, Google (login, opcional), GitHub Actions (CI, ping de 10 min e limpeza diária). Nenhum serviço de e-mail ativo; e-mail é fase 2 (`docs/fase-2.md`).
+- Variáveis sensíveis (só nomes): `DATABASE_URL`, `SECRET_KEY`, `CRON_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`; `APP_URL` e `CRON_SECRET` também nos segredos do GitHub. `CONTATO_EMAIL`, `BASE_URL` e `PROXY_HOPS` não são segredo. Exemplo sem valores em `.env.example`.
 
 ## Dados e operação
 
@@ -62,3 +62,6 @@ Instância do modelo de contexto do guia. Sem segredos. "Desconhecido" = ainda n
 | Entrada de dia por lista de links, não grade de calendário | Evita as armadilhas de acessibilidade do `role="grid"` e funciona sem JavaScript | 29/10/2026 |
 | Origem do cliente por contador diário e `?v=`, sem IP | LGPD: coleta mínima; a pergunta é "de onde vieram", não "quem" | 29/10/2026 |
 | Capacidade garantida por gatilho com `pg_advisory_xact_lock` por profissional | Funciona em transação, inclusive atrás do pooler do Neon | 29/10/2026 |
+| Token da reserva derivado do id com HMAC (o banco guarda só o hash) | O profissional precisa montar o link no lembrete; um vazamento só do banco não revela links | 29/10/2026 |
+| Papel público sem UPDATE em `reservas`; 4 funções fazem as transições do cliente | Nem um erro no app deixa o cliente mudar horário ou estado | 29/10/2026 |
+| Limpeza diária e ping por GitHub Actions (`manutencao.yml`) | Gratuito, sem servidor de agendamento; `/saude` não toca o banco para o Neon poder suspender | 30/10/2026 |

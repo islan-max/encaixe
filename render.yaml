@@ -1,0 +1,33 @@
+# Blueprint do Render: um web service gratuito. O banco fica no Neon (ver docs/instalacao.md).
+# Os valores com `sync: false` o Render pede uma vez, na criação do Blueprint.
+services:
+  - type: web
+    name: encaixe
+    runtime: python
+    plan: free
+    region: virginia # não dá para mudar depois; escolha a mais perto do banco
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && pip install --no-deps .
+    startCommand: python -m encaixe.migrate && uvicorn encaixe.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /saude
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: ENCAIXE_ENV
+        value: producao
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PROXY_HOPS
+        value: "1"
+      - key: DATABASE_URL
+        sync: false
+      - key: BASE_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: CONTATO_EMAIL
+        sync: false
