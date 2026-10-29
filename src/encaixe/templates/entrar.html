@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block titulo %}Entrar · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Entrar</h1>
+{% if erro %}<div class="aviso erro" role="alert"><p>{{ erro }}</p></div>{% endif %}
+<form method="post" action="/entrar" novalidate>
+  {{ campo("email", "E-mail", "email", email, None, None, "email") }}
+  {{ campo("senha", "Senha", "password", "", None, None, "current-password") }}
+  <button class="botao" type="submit">Entrar</button>
+</form>
+<p style="margin-top:1.25rem"><a href="/recuperar">Perdi minha senha</a></p>
+{% if google_ativo %}
+<p class="separador">ou</p>
+<a class="botao secundario" href="/entrar/google">Entrar com Google</a>
+{% endif %}
+<p style="margin-top:1.25rem">Primeira vez aqui? <a href="/cadastrar">Criar conta</a></p>
+{% endblock %}

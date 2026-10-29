@@ -1,0 +1,14 @@
+{% macro campo(id, rotulo, tipo="text", valor="", erro=None, dica=None, autocomplete=None, obrigatorio=True, extra="") %}
+<div class="campo">
+  <label for="{{ id }}">{{ rotulo }}</label>
+  <input id="{{ id }}" name="{{ id }}" type="{{ tipo }}" value="{{ valor or '' }}"
+         {% if obrigatorio %}required{% endif %}
+         {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+         {% if tipo in ('email', 'password') %}autocapitalize="none" spellcheck="false"{% endif %}
+         {% if erro %}aria-invalid="true"{% endif %}
+         {% if erro or dica %}aria-describedby="{% if dica %}{{ id }}-dica{% endif %} {% if erro %}{{ id }}-erro{% endif %}"{% endif %}
+         {{ extra|safe }}>
+  {% if dica %}<p class="dica" id="{{ id }}-dica">{{ dica }}</p>{% endif %}
+  {% if erro %}<p class="erro-campo" id="{{ id }}-erro">{{ erro }}</p>{% endif %}
+</div>
+{% endmacro %}

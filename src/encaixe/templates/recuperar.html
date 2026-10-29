@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block titulo %}Recuperar acesso · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Recuperar acesso</h1>
+<p>Quando você criou a conta, mostramos 8 códigos de recuperação. Use um deles para escolher uma senha nova. Cada código vale uma vez.</p>
+{% if erro %}<div class="aviso erro" role="alert"><p>{{ erro }}</p></div>{% endif %}
+<form method="post" action="/recuperar" novalidate>
+  {{ campo("email", "E-mail da conta", "email", email, None, None, "email") }}
+  {{ campo("codigo", "Um dos seus códigos", "text", "", None, "Parece com k7m2q-x9p4d. Não importa se você usa maiúscula ou o traço.", "off", extra='autocapitalize="none" spellcheck="false"') }}
+  {{ campo("nova_senha", "Senha nova", "password", "", erro_senha, "Pelo menos 10 caracteres.", "new-password") }}
+  <button class="botao" type="submit">Trocar a senha</button>
+</form>
+<p style="margin-top:1.25rem">Entrou com o Google? Então não há senha aqui: <a href="/entrar">volte e use o botão do Google</a>. Se perdeu os códigos e a senha, não temos como confirmar que a conta é sua; crie uma conta nova.</p>
+{% endblock %}

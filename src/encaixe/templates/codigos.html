@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titulo %}Guarde seus códigos · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Conta criada. Guarde estes códigos.</h1>
+<div class="aviso atencao">
+  <p><strong>Esta é a única vez que você vê os códigos.</strong> Se esquecer a senha, é com um deles que você volta para a conta, porque não mandamos e-mail.</p>
+</div>
+<ul class="codigos" aria-label="Seus códigos de recuperação">
+  {% for c in codigos %}<li>{{ c }}</li>{% endfor %}
+</ul>
+<p>Tire uma foto, anote no papel ou salve no gerenciador de senhas. Cada código vale uma vez.</p>
+<a class="botao" href="/painel">Já guardei, continuar</a>
+{% endblock %}
