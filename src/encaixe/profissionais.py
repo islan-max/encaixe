@@ -1,0 +1,40 @@
+"""Criar o perfil de um profissional: página, serviços e horários de exemplo, numa transação."""
+
+import psycopg
+
+from encaixe.categorias import CATEGORIAS, HORARIO_PADRAO
+
+
+class SlugEmUso(Exception):
+    pass
+
+
+def criar_perfil(
+    conn: psycopg.Connection, conta_id: str, nome: str, slug: str, whatsapp: str, categoria: str
+) -> str:
+    """Roda no contexto `sistema`. Devolve o id do profissional."""
+    cat = CATEGORIAS[categoria]
+    try:
+        with conn.transaction():
+            pro = conn.execute(
+                "insert into profissionais (slug, nome, categoria, whatsapp, lembrete_discreto)"
+                " values (%s, %s, %s, %s, %s) returning id",
+                (slug, nome, categoria, whatsapp, cat.discreto),
+            ).fetchone()["id"]
+    except psycopg.errors.UniqueViolation:
+        raise SlugEmUso from None
+    for ordem, (rotulo, duracao, folga, vagas) in enumerate(cat.servicos):
+        conn.execute(
+            "insert into servicos (profissional_id, nome, duracao_min, folga_min, vagas, ordem)"
+            " values (%s, %s, %s, %s, %s, %s)",
+            (pro, rotulo, duracao, folga, vagas, ordem),
+        )
+    for dia, faixas in HORARIO_PADRAO.items():
+        for inicio, fim in faixas:
+            conn.execute(
+                "insert into horarios_semanais (profissional_id, dia_semana, inicio, fim)"
+                " values (%s, %s, %s, %s)",
+                (pro, dia, inicio, fim),
+            )
+    conn.execute("update contas set profissional_id = %s where id = %s", (pro, conta_id))
+    return str(pro)

@@ -136,3 +136,26 @@ legend { font-weight: 600; padding: 0; margin-bottom: .4rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* Painel */
+.subnav ul { list-style: none; margin: 0 0 1.25rem; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem .25rem; border-bottom: 1px solid var(--linha); }
+.subnav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .75rem; text-decoration: none; color: var(--suave); border-bottom: 3px solid transparent; margin-bottom: -1px; font-weight: 600; }
+.subnav a[aria-current=page] { color: var(--texto); border-bottom-color: var(--marca); }
+.subnav a:hover { color: var(--texto); }
+.lista { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+.item { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: .85rem 0; border-bottom: 1px solid var(--linha); }
+.item.apagado { opacity: 1; color: var(--suave); }
+.item-acoes { display: flex; flex-wrap: wrap; gap: .5rem; }
+.item-acoes form, .item form { margin: 0; }
+.etiqueta { display: inline-block; font-size: .85rem; font-weight: 600; padding: .05rem .5rem; border-radius: 999px; background: var(--superficie); border: 1px solid var(--borda); color: var(--texto); }
+.etiqueta.aviso-etiqueta { background: var(--aviso-fundo); color: var(--aviso); border-color: var(--aviso); }
+.dia, .periodo { border: 0; padding: 0; }
+.dia { border-bottom: 1px solid var(--linha); padding: .75rem 0 .5rem; margin: 0; }
+.dia > legend { font-weight: 700; font-size: 1.05rem; float: left; width: 100%; margin-bottom: .25rem; }
+.dia > legend + * { clear: both; }
+.periodo { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin: 0 0 .35rem; }
+.periodo > legend { float: none; width: 8rem; font-weight: 400; color: var(--suave); font-size: .95rem; margin: 0; }
+.periodo label { display: inline-flex; align-items: center; gap: .4rem; font-weight: 400; margin: 0; }
+.periodo input[type=time] { width: 8.5rem; }
+.periodo.com-erro input { border-color: var(--erro); }
+code { font: .95em ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--superficie); padding: .05rem .3rem; border-radius: 4px; }

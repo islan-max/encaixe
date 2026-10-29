@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<nav class="subnav" aria-label="Seções do painel">
+  <ul>
+    {% for id, rotulo, url in [("inicio", "Início", "/painel"), ("servicos", "Serviços", "/painel/servicos"), ("horarios", "Horários", "/painel/horarios"), ("regras", "Regras", "/painel/regras"), ("folgas", "Folgas", "/painel/folgas"), ("perfil", "Perfil", "/painel/perfil")] %}
+    <li><a href="{{ url }}"{% if secao == id %} aria-current="page"{% endif %}>{{ rotulo }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% block painel %}{% endblock %}
+{% endblock %}

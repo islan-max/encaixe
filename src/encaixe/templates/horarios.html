@@ -1,0 +1,34 @@
+{% extends "painel_base.html" %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Horários · Encaixe{% endblock %}
+{% block painel %}
+<h1>Horários de atendimento</h1>
+<p>Preencha o começo e o fim de cada período em que você atende. Deixe em branco o dia em que não atende. Use o segundo período para o horário depois do almoço.</p>
+
+{% if request.query_params.get("salvo") %}<div class="aviso ok" role="status"><p>Horários salvos.</p></div>{% endif %}
+{% if erros %}
+<div class="aviso erro" role="alert">
+  <p>Corrija antes de salvar:</p>
+  <ul>{% for msg in erros.values() %}<li>{{ msg }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+<form method="post" action="/painel/horarios" novalidate>
+  {{ csrf_campo() }}
+  {% for nome_dia in dias %}
+  {% set d = loop.index0 %}
+  <fieldset class="dia">
+    <legend>{{ nome_dia }}</legend>
+    {% for p, rotulo in [("a", "1º período"), ("b", "2º período")] %}
+    {% set chave = "d" ~ d ~ p %}
+    <fieldset class="periodo{% if erros[chave] %} com-erro{% endif %}">
+      <legend>{{ rotulo }}</legend>
+      <label>Das <input type="time" name="{{ chave }}_ini" value="{{ valores.get(chave ~ '_ini', '') }}"{% if erros[chave] %} aria-invalid="true"{% endif %}></label>
+      <label>às <input type="time" name="{{ chave }}_fim" value="{{ valores.get(chave ~ '_fim', '') }}"{% if erros[chave] %} aria-invalid="true"{% endif %}></label>
+    </fieldset>
+    {% endfor %}
+  </fieldset>
+  {% endfor %}
+  <button class="botao" type="submit">Salvar horários</button>
+</form>
+{% endblock %}

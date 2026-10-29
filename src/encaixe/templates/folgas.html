@@ -1,0 +1,50 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Folgas · Encaixe{% endblock %}
+{% block painel %}
+<h1>Folgas e férias</h1>
+<p>Nos dias e horários marcados aqui ninguém consegue agendar com você.</p>
+
+{% if request.query_params.get("criada") %}
+  {% set n = request.query_params.get("cruzam", "0") %}
+  {% if n != "0" %}
+  <div class="aviso atencao" role="status">
+    <p>Folga criada, mas {{ n }} reserva{{ "s" if n != "1" }} já marcada{{ "s" if n != "1" }} cai{{ "m" if n != "1" }} nesse período. O Encaixe não cancela sozinho: avise {{ "esses clientes" if n != "1" else "esse cliente" }}.</p>
+  </div>
+  {% else %}
+  <div class="aviso ok" role="status"><p>Folga criada.</p></div>
+  {% endif %}
+{% endif %}
+
+<h2>Próximas folgas</h2>
+<ul class="lista" aria-label="Próximas folgas">
+  {% for f in folgas %}
+  <li class="item">
+    <div>
+      <strong>{{ data_e_hora(f.inicio, fuso) }}</strong> até <strong>{{ data_e_hora(f.fim, fuso) }}</strong>
+      {% if f.motivo %}<br><span class="dica">{{ f.motivo }}</span>{% endif %}
+      {% if f.reservas %}<br><span class="etiqueta aviso-etiqueta">{{ f.reservas }} reserva{{ "s" if f.reservas != 1 }} marcada{{ "s" if f.reservas != 1 }} nesse período</span>{% endif %}
+    </div>
+    <form method="post" action="/painel/folgas/{{ f.id }}/apagar">
+      {{ csrf_campo() }}
+      <button class="botao secundario pequeno" type="submit" aria-label="Apagar a folga de {{ data_e_hora(f.inicio, fuso) }}">Apagar</button>
+    </form>
+  </li>
+  {% else %}
+  <li class="item">Nenhuma folga marcada.</li>
+  {% endfor %}
+</ul>
+
+<h2>Nova folga</h2>
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>{% endif %}
+<form method="post" action="/painel/folgas" novalidate class="cartao">
+  {{ csrf_campo() }}
+  {{ campo("de_dia", "Primeiro dia", "date", valores.de_dia, erros.de) }}
+  {{ campo("de_hora", "Hora em que começa (opcional)", "time", valores.de_hora, None, "Em branco: começa de manhã cedo, o dia todo.", None, False) }}
+  {{ campo("ate_dia", "Último dia", "date", valores.ate_dia, erros.ate, "Para um dia só, repita o primeiro dia.", None, False) }}
+  {{ campo("ate_hora", "Hora em que termina (opcional)", "time", valores.ate_hora, None, "Em branco: vai até o fim do último dia.", None, False) }}
+  {{ campo("motivo", "Motivo (só você vê)", "text", valores.motivo, erros.motivo, None, "off", False) }}
+  <button class="botao" type="submit">Marcar folga</button>
+</form>
+{% endblock %}

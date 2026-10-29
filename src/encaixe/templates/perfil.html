@@ -1,0 +1,46 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Perfil · Encaixe{% endblock %}
+{% block painel %}
+<h1>Perfil</h1>
+{% if request.query_params.get("salvo") %}<div class="aviso ok" role="status"><p>Perfil salvo.</p></div>{% endif %}
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira os campos abaixo.</p></div>{% endif %}
+
+<form method="post" action="/painel/perfil" novalidate>
+  {{ csrf_campo() }}
+  {{ campo("nome", "Nome", "text", valores.nome, erros.nome, None, "name") }}
+  {{ campo("slug", "Endereço da página", "text", valores.slug, erros.slug, "Mudar o endereço quebra os links e QR codes que você já divulgou.", "off", True, 'autocapitalize="none" spellcheck="false"') }}
+  {{ campo("whatsapp", "WhatsApp", "tel", valores.whatsapp, erros.whatsapp, None, "tel") }}
+  <div class="campo">
+    <label for="fuso">Fuso horário</label>
+    <select id="fuso" name="fuso"{% if erros.fuso %} aria-invalid="true" aria-describedby="fuso-erro"{% endif %}>
+      {% for codigo, rotulo in fusos.items() %}<option value="{{ codigo }}"{% if codigo == valores.fuso %} selected{% endif %}>{{ rotulo }}</option>{% endfor %}
+    </select>
+    {% if erros.fuso %}<p class="erro-campo" id="fuso-erro">{{ erros.fuso }}</p>{% endif %}
+  </div>
+  <div class="campo">
+    <label for="mensagem_lembrete">Mensagem do lembrete no WhatsApp</label>
+    <textarea id="mensagem_lembrete" name="mensagem_lembrete" rows="4" maxlength="500" aria-describedby="msg-dica{% if erros.mensagem %} msg-erro{% endif %}"{% if erros.mensagem %} aria-invalid="true"{% endif %}>{{ valores.mensagem_lembrete }}</textarea>
+    <p class="dica" id="msg-dica">Você pode usar: <code>{nome}</code> do cliente, <code>{dia}</code>, <code>{hora}</code>, <code>{link}</code> da reserva, <code>{servico}</code> e <code>{profissional}</code>.</p>
+    {% if erros.mensagem %}<p class="erro-campo" id="msg-erro">{{ erros.mensagem }}</p>{% endif %}
+  </div>
+  <label class="escolha">
+    <input type="checkbox" name="lembrete_discreto" value="1"{% if valores.lembrete_discreto %} checked{% endif %}>
+    <span><strong>Lembrete discreto</strong><br><span class="dica">Quando a mensagem usa <code>{servico}</code>, escreve "atendimento" no lugar do nome do serviço. Recomendado para saúde.</span></span>
+  </label>
+  <button class="botao" type="submit">Salvar perfil</button>
+</form>
+
+{% if por_senha %}
+<section class="cartao" id="codigos" aria-labelledby="cod-titulo" style="margin-top:2rem">
+  <h2 id="cod-titulo">Códigos de recuperação</h2>
+  <p>Gerar códigos novos apaga os antigos. Confirme com a sua senha.</p>
+  <form method="post" action="/painel/codigos">
+    {{ csrf_campo() }}
+    {{ campo("senha", "Sua senha", "password", "", None, None, "current-password") }}
+    <button class="botao secundario" type="submit">Gerar códigos novos</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

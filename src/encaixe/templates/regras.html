@@ -1,0 +1,38 @@
+{% extends "painel_base.html" %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Regras · Encaixe{% endblock %}
+{% block painel %}
+<h1>Regras de agendamento</h1>
+{% if request.query_params.get("salvo") %}<div class="aviso ok" role="status"><p>Regras salvas.</p></div>{% endif %}
+<form method="post" action="/painel/regras">
+  {{ csrf_campo() }}
+  <div class="campo">
+    <label for="passo">De quanto em quanto tempo um horário pode começar</label>
+    <select id="passo" name="passo" aria-describedby="passo-dica">
+      {% for p in passos %}<option value="{{ p }}"{% if p == perfil.passo_min %} selected{% endif %}>{{ p }} minutos</option>{% endfor %}
+    </select>
+    <p class="dica" id="passo-dica">Com 30 minutos, os horários saem 9:00, 9:30, 10:00…</p>
+  </div>
+  <div class="campo">
+    <label for="antecedencia">Antecedência mínima para marcar</label>
+    <select id="antecedencia" name="antecedencia" aria-describedby="ante-dica">
+      {% for h in antecedencias %}<option value="{{ h }}"{% if h == ante_h %} selected{% endif %}>{{ "Sem antecedência" if h == 0 else (h ~ " hora" ~ ("s" if h > 1) if h < 24 else (h // 24) ~ " dia" ~ ("s" if h > 24)) }}</option>{% endfor %}
+    </select>
+    <p class="dica" id="ante-dica">Evita cliente marcando em cima da hora.</p>
+  </div>
+  <div class="campo">
+    <label for="horizonte">Até quanto tempo à frente o cliente pode marcar</label>
+    <select id="horizonte" name="horizonte">
+      {% for d in horizontes %}<option value="{{ d }}"{% if d == perfil.dias_a_frente %} selected{% endif %}>{{ d }} dias</option>{% endfor %}
+    </select>
+  </div>
+  <div class="campo">
+    <label for="cancelar">O cliente pode cancelar ou remarcar até</label>
+    <select id="cancelar" name="cancelar" aria-describedby="canc-dica">
+      {% for h in cancelares %}<option value="{{ h }}"{% if h == cancelar_h %} selected{% endif %}>{{ "Até a hora marcada" if h == 0 else (h ~ " hora" ~ ("s" if h > 1) ~ " antes" if h < 24 else (h // 24) ~ " dia" ~ ("s" if h > 24) ~ " antes") }}</option>{% endfor %}
+    </select>
+    <p class="dica" id="canc-dica">Depois desse prazo a página não deixa mais cancelar sozinho: o cliente é mandado para o seu WhatsApp.</p>
+  </div>
+  <button class="botao" type="submit">Salvar regras</button>
+</form>
+{% endblock %}
