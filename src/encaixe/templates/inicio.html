@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titulo %}Encaixe · Sua agenda sem troca de mensagem{% endblock %}
+{% block conteudo %}
+<section class="heroi">
+  <h1>Dá pra encaixar às 15h?</h1>
+  <p class="lead">Seu cliente vê os horários livres, escolhe e marca sozinho, sem criar conta. Você abre o dia e manda o lembrete com um toque no WhatsApp.</p>
+  <div class="acoes">
+    <a class="botao" href="/cadastrar">Criar minha página</a>
+    <a class="botao secundario" href="/entrar">Já tenho conta</a>
+  </div>
+</section>
+
+<section aria-labelledby="como">
+  <h2 id="como">Como funciona</h2>
+  <ol>
+    <li><strong>Você monta sua página</strong> com serviços, duração e horários de atendimento.</li>
+    <li><strong>Divulga o link</strong> no Instagram, no WhatsApp ou num QR code no cartão.</li>
+    <li><strong>O cliente marca</strong> e recebe um link para ver, remarcar ou cancelar.</li>
+    <li><strong>Você vê o dia</strong> e lembra cada cliente com um toque.</li>
+  </ol>
+</section>
+
+<section aria-labelledby="porque" class="cartao">
+  <h2 id="porque">Grátis, sem pegadinha</h2>
+  <p>Sem mensalidade e sem anúncio. O Encaixe guarda só o nome e o WhatsApp de quem marca, não usa cookie de rastreamento e é de código aberto.</p>
+</section>
+{% endblock %}

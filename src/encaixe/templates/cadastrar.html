@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_campos.html" import campo %}
+{% block titulo %}Criar conta · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Criar minha conta</h1>
+{% if erros and erros.geral %}<div class="aviso erro" role="alert"><p>{{ erros.geral }}</p></div>{% endif %}
+<form method="post" action="/cadastrar" novalidate>
+  {{ campo("email", "Seu e-mail", "email", email, erros.email if erros, "Serve só para você entrar. Não mandamos e-mail nenhum.", "email") }}
+  {{ campo("senha", "Escolha uma senha", "password", "", erros.senha if erros, "Pelo menos 10 caracteres. Uma frase fácil de lembrar é melhor que símbolos.", "new-password") }}
+  <button class="botao" type="submit">Criar conta</button>
+</form>
+{% if google_ativo %}
+<p class="separador">ou</p>
+<a class="botao secundario" href="/entrar/google">Entrar com Google</a>
+{% endif %}
+<p style="margin-top:1.25rem">Já tem conta? <a href="/entrar">Entrar</a></p>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Meu painel · Encaixe{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block conteudo %}
+<h1>Meu painel</h1>
+{% if codigos_restantes is not none and codigos_restantes <= 2 %}
+<div class="aviso atencao" role="status">
+  <p>Seus códigos de recuperação estão acabando ({{ codigos_restantes }} restantes).</p>
+</div>
+{% endif %}
+{% if not usuario.profissional_id %}
+<div class="cartao">
+  <h2>Falta montar sua página</h2>
+  <p>Em breve: nome da página, serviços e horários de atendimento.</p>
+</div>
+{% endif %}
+{% endblock %}
