@@ -17,8 +17,8 @@ services:
         value: producao
       - key: SECRET_KEY
         generateValue: true
-      - key: PROXY_HOPS
-        value: "1"
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip # o Render fica atrás do Cloudflare, que sobrescreve este cabeçalho
       - key: DATABASE_URL
         sync: false
       - key: BASE_URL

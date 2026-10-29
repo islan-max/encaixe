@@ -59,7 +59,8 @@ O workflow `Manutenção` faz um ping a cada 10 minutos (para o Render não hibe
 | `ENCAIXE_ENV` | em produção | `producao` liga cookie seguro (`__Host-`, `Secure`), HSTS e exige `SECRET_KEY` boa |
 | `SECRET_KEY` | em produção | 32+ caracteres. Assina o login Google e **deriva os links das reservas** |
 | `BASE_URL` | sim | Endereço público, sem barra no fim |
-| `PROXY_HOPS` | recomendada | Quantos proxies de confiança há na frente do app. Com `1`, o limite de tentativas usa o endereço que o proxy acrescentou ao `X-Forwarded-For` (o mais à direita). Com `0`, usa o endereço da conexão. |
+| `CLIENT_IP_HEADER` | recomendada atrás de proxy | Cabeçalho com o IP do visitante que o proxy de confiança **sobrescreve**. No Render, `cf-connecting-ip`. O limite de tentativas usa o valor só na memória. Cabeçalho que o visitante consegue escrever (como o `X-Forwarded-For` puro) NÃO serve: dá para contornar o limite. |
+| `PROXY_HOPS` | opcional | Alternativa quando não há cabeçalho assim: quantos proxies de confiança acrescentam ao `X-Forwarded-For` (conta da direita). Padrão `0`. |
 | `CRON_SECRET` | para a limpeza | Autoriza `POST /interno/limpeza` |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | opcionais | Entrar com Google |
 | `CONTATO_EMAIL` | opcional | E-mail mostrado na política de privacidade |
@@ -99,4 +100,4 @@ Com um domínio (cerca de R$ 40 por ano) você pode apontá-lo para o Render e, 
 | Erro `must be owner`/`permission denied to create role` na migração | O usuário do `DATABASE_URL` não pode criar papéis. No Neon, use o papel padrão do projeto (dono). |
 | Login com Google dá erro | A URI de redirecionamento não é exatamente `BASE_URL/entrar/google/retorno`, ou o app está em modo "Teste" e seu e-mail não está na lista. |
 | Links de reserva antigos pararam de abrir | A `SECRET_KEY` foi trocada. Volte ao valor anterior. |
-| O limite de tentativas bloqueia todo mundo | `PROXY_HOPS` errado: o app está vendo o endereço do proxy como se fosse o do visitante. |
+| O limite de tentativas bloqueia todo mundo | O app está vendo o endereço do proxy como se fosse o do visitante: configure `CLIENT_IP_HEADER`. |

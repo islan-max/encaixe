@@ -59,13 +59,26 @@ class Limitador:
 
 
 def ip_do_cliente(request: Request) -> str:
-    """Endereço de quem acessa. `X-Forwarded-For` é forjável: só vale o que os proxies de
-    confiança acrescentaram, contados da direita para a esquerda (`PROXY_HOPS`)."""
-    saltos = carregar().proxy_hops
-    if saltos > 0:
+    """Endereço de quem acessa, só para contar tentativas (nunca é gravado).
+
+    Cabeçalho de IP é forjável: o visitante manda o que quiser. Só vale o que um proxy de confiança
+    põe por cima. Duas formas, nesta ordem:
+
+    1. `CLIENT_IP_HEADER`: um cabeçalho que o proxy SOBRESCREVE (no Cloudflare, `cf-connecting-ip`).
+    2. `PROXY_HOPS`: o endereço que os N proxies de confiança acrescentaram ao `X-Forwarded-For`,
+       contado da direita para a esquerda. Só use se souber quantos proxies existem.
+
+    Sem nada disso, vale o endereço da conexão (atrás de proxy, é o do proxy: limite compartilhado).
+    """
+    config = carregar()
+    if config.client_ip_header:
+        valor = request.headers.get(config.client_ip_header, "").strip()
+        if valor:
+            return valor
+    if config.proxy_hops > 0:
         cadeia = [p.strip() for p in request.headers.get("x-forwarded-for", "").split(",") if p]
-        if len(cadeia) >= saltos:
-            return cadeia[-saltos]
+        if len(cadeia) >= config.proxy_hops:
+            return cadeia[-config.proxy_hops]
     return request.client.host if request.client else "desconhecido"
 
 
