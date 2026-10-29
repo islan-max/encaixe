@@ -25,10 +25,11 @@ def _pool_aberto() -> ConnectionPool:
             min_size=0,  # o Neon suspende o banco ocioso e derruba as conexões
             max_size=int(os.environ.get("DB_POOL_MAX", "5")),
             max_idle=240,
+            timeout=15,  # espera por uma conexão (o Neon pode estar acordando)
             check=ConnectionPool.check_connection,
             # prepare_threshold=None: o pooler do Neon (PgBouncer em modo transação) troca de
             # conexão a cada transação, e comando preparado não sobrevive a isso.
-            kwargs={"row_factory": dict_row, "prepare_threshold": None},
+            kwargs={"row_factory": dict_row, "prepare_threshold": None, "connect_timeout": 10},
             open=True,
         )
     return _pool

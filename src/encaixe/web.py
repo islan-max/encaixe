@@ -86,7 +86,10 @@ def checar_csrf(request: Request, recebido: str) -> None:
 def pagina(request: Request, nome: str, status: int = 200, **contexto) -> HTMLResponse:
     usuario = usuario_atual(request)
     token = getattr(request.state, "sessao_token", None)
+    config = carregar()
     contexto.setdefault("usuario", usuario)
+    contexto.setdefault("base_url", config.base_url)
+    contexto.setdefault("contato_email", config.contato_email)
     contexto.setdefault("csrf", token_csrf(token) if token else "")
     return modelos.TemplateResponse(request, nome, contexto, status_code=status)
 

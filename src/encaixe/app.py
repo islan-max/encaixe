@@ -1,6 +1,10 @@
+import logging
+
+import psycopg
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from psycopg_pool import PoolTimeout
 from starlette.exceptions import HTTPException as ErroHTTP
 
 from encaixe import (
@@ -59,6 +63,32 @@ def create_app() -> FastAPI:
             titulo=titulo,
             ajuda=ajuda,
             detalhe=erro.detail if erro.status_code in (403, 422) else None,
+        )
+
+    @app.exception_handler(psycopg.OperationalError)
+    @app.exception_handler(PoolTimeout)
+    def banco_fora(request: Request, erro: Exception) -> HTMLResponse:
+        # Banco acordando (Neon) ou fora do ar: pede para tentar de novo, sem mostrar o motivo.
+        logging.getLogger("encaixe").warning("banco indisponível: %s", type(erro).__name__)
+        resposta = pagina(
+            request,
+            "erro.html",
+            status=503,
+            titulo="Estamos acordando por aqui",
+            ajuda="O serviço ficou um tempo parado e está voltando. Tente de novo em instantes.",
+        )
+        resposta.headers["Retry-After"] = "5"
+        return resposta
+
+    @app.exception_handler(Exception)
+    def erro_inesperado(request: Request, erro: Exception) -> HTMLResponse:
+        logging.getLogger("encaixe").exception("erro inesperado em %s", request.url.path)
+        return pagina(
+            request,
+            "erro.html",
+            status=500,
+            titulo="Algo deu errado do nosso lado",
+            ajuda="Não foi culpa sua. Tente de novo; se continuar, avise pelo GitHub do projeto.",
         )
 
     return app

@@ -7,6 +7,17 @@
   <title>{% block titulo %}Encaixe{% endblock %}</title>
   <meta name="description" content="{% block descricao %}Agenda para autônomos: o cliente marca sozinho, você manda o lembrete com um toque.{% endblock %}">
   {% block robots %}{% endblock %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Encaixe">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="{% block og_titulo %}Encaixe, a agenda dos autônomos{% endblock %}">
+  <meta property="og:description" content="{% block og_descricao %}O cliente marca sozinho, sem criar conta. Você vê o dia e lembra com um toque no WhatsApp.{% endblock %}">
+  <meta property="og:image" content="{{ base_url }}/static/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Encaixe: dá pra encaixar às 15h?">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/estilo.css">
   {% block head %}{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block titulo %}Política de privacidade · Encaixe{% endblock %}
+{% block descricao %}Quais dados o Encaixe guarda, por quê, por quanto tempo e como pedir para apagar.{% endblock %}
+{% block conteudo %}
+<h1>Política de privacidade</h1>
+<p class="dica">Atualizada em 29 de outubro de 2026.</p>
+<p>O Encaixe é um projeto de código aberto e gratuito, mantido por Islan Max. Esta página explica, sem juridiquês, quais dados o Encaixe guarda, para quê, por quanto tempo e como você pede para apagar. Ela descreve o que o programa faz de fato; não é aconselhamento jurídico.</p>
+
+<h2>Quem é quem</h2>
+<ul>
+  <li><strong>O profissional</strong> (barbeiro, personal, psicólogo, manicure…) que usa o Encaixe é quem decide por que e como usar os dados dos <em>seus clientes</em>. É ele o responsável por esses dados.</li>
+  <li><strong>O Encaixe</strong> guarda esses dados em nome do profissional, só para o agendamento funcionar. Dos dados da <em>conta do profissional</em>, o responsável é o mantenedor do projeto.</li>
+</ul>
+
+<h2>O que guardamos</h2>
+<h3>De quem tem uma página de agendamento</h3>
+<ul>
+  <li>E-mail e senha (a senha vira um código irreversível; ninguém, nem o mantenedor, consegue ler) ou, se entrou com o Google, o identificador da conta Google e o e-mail dela.</li>
+  <li>Nome, WhatsApp, serviços, horários de atendimento, folgas e as regras que você escolheu.</li>
+</ul>
+<h3>De quem marca um horário</h3>
+<ul>
+  <li><strong>Nome</strong> e <strong>WhatsApp</strong>, para o profissional confirmar e lembrar do horário. E-mail só se você quiser informar.</li>
+  <li>O horário, o serviço escolhido e o estado da reserva (confirmada, cancelada, atendida…).</li>
+  <li>Qual link de divulgação você usou (por exemplo, "Instagram"), sem qualquer dado seu.</li>
+  <li>Na lista de espera: nome, WhatsApp e o dia desejado.</li>
+</ul>
+<p>Não existe campo para contar o motivo do atendimento. Por favor, não escreva informações de saúde nem outras informações sensíveis em campos de nome ou de e-mail.</p>
+
+<h2>O que não guardamos</h2>
+<ul>
+  <li>Nosso programa não guarda o seu endereço de internet (IP), o modelo do seu aparelho nem o navegador que você usa.</li>
+  <li>Não usamos cookies de rastreamento, análise de acesso, pixels, publicidade, nem fontes ou scripts de outros sites.</li>
+  <li>Quem só marca um horário não recebe nenhum cookie. O único cookie do Encaixe é o da sessão de quem entrou no painel e, por 10 minutos, um cookie técnico durante o "Entrar com Google".</li>
+  <li>A empresa de hospedagem (Render) e a do banco de dados (Neon) podem registrar endereços de internet nos registros técnicos delas, por tempo limitado, para fazer o serviço funcionar. Isso foge do nosso controle.</li>
+</ul>
+
+<h2>Para que usamos</h2>
+<p>Só para agendar: mostrar horários livres, guardar a reserva, deixar você ver, trocar ou cancelar, e permitir que o profissional veja o dia e lembre você pelo WhatsApp. O Encaixe <strong>não envia mensagens</strong>: quem toca no botão do WhatsApp é o profissional, pelo aplicativo dele.</p>
+
+<h2>Por quanto tempo guardamos</h2>
+<ul>
+  <li><strong>Nome, WhatsApp e e-mail de quem marcou:</strong> até 90 dias depois do horário. Depois disso, ficam anonimizados (o profissional continua vendo que houve um horário, mas não quem era).</li>
+  <li><strong>Lista de espera:</strong> apagada 7 dias depois do dia desejado.</li>
+  <li><strong>Sessões:</strong> 30 dias. <strong>Contador de aberturas dos links:</strong> um número por origem e por dia, sem dado pessoal, por até 13 meses.</li>
+  <li><strong>Conta do profissional:</strong> até você pedir para excluir. Em Perfil &rarr; Excluir minha conta, tudo é apagado na hora, inclusive as reservas e os dados dos clientes.</li>
+</ul>
+
+<h2>Com quem os dados passam</h2>
+<p>Com ninguém além de quem faz o serviço funcionar: o Render (onde o programa roda), o Neon (onde o banco de dados fica, no Brasil) e, para quem escolhe entrar com o Google, o Google. Não vendemos nem cedemos dados para publicidade.</p>
+
+<h2>Seus direitos</h2>
+<ul>
+  <li><strong>Quem marcou um horário:</strong> pela página da sua reserva você vê os dados, cancela e, depois de cancelar ou de passar o horário, apaga seu nome e WhatsApp com um botão ("Apagar meus dados"). Para qualquer outro pedido (corrigir, saber o que existe sobre você), fale com o profissional ou com o contato abaixo.</li>
+  <li><strong>Profissionais:</strong> podem ver, corrigir e excluir tudo no painel.</li>
+</ul>
+
+<h2>Segurança</h2>
+<p>Senhas guardadas com Argon2id; links de reserva impossíveis de adivinhar e guardados só como código irreversível; conexão protegida (HTTPS); cada profissional só enxerga os próprios dados, o que é garantido no próprio banco; limite de tentativas contra abuso. Nenhum sistema é perfeito: se algo der errado com os seus dados, o mantenedor avisa o profissional afetado.</p>
+
+<h2>Contato e mudanças</h2>
+<p>Dúvidas e pedidos: abra uma conversa em <a href="https://github.com/islan-max/encaixe/issues">github.com/islan-max/encaixe/issues</a> (público: não escreva dados pessoais lá){% if contato_email %}, ou escreva para <a href="mailto:{{ contato_email }}">{{ contato_email }}</a>{% endif %}. Se esta política mudar, a data lá em cima muda e o histórico fica visível no repositório.</p>
+{% endblock %}

@@ -16,6 +16,7 @@ class Config:
     google_client_id: str | None
     google_client_secret: str | None
     cron_secret: str | None
+    contato_email: str | None  # e-mail público da política de privacidade (opcional)
 
     @property
     def cookie_seguro(self) -> bool:
@@ -39,4 +40,5 @@ def carregar() -> Config:
         google_client_id=os.environ.get("GOOGLE_CLIENT_ID") or None,
         google_client_secret=os.environ.get("GOOGLE_CLIENT_SECRET") or None,
         cron_secret=os.environ.get("CRON_SECRET") or None,
+        contato_email=os.environ.get("CONTATO_EMAIL") or None,
     )
