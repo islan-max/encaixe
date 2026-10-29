@@ -2,6 +2,8 @@
 {% from "_campos.html" import campo %}
 {% from "_publica_partes.html" import resumo, lista_de_dias, chips %}
 {% block titulo %}Marcar horário com {{ perfil.nome }} · Encaixe{% endblock %}
+{% block og_titulo %}Marque seu horário com {{ perfil.nome }}{% endblock %}
+{% block og_descricao %}Escolha o serviço, o dia e o horário. Sem cadastro, é rápido.{% endblock %}
 {% block descricao %}Escolha o serviço, o dia e o horário com {{ perfil.nome }}. Sem cadastro.{% endblock %}
 {% block conteudo %}
 

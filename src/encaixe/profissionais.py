@@ -10,6 +10,16 @@ class SlugEmUso(Exception):
     pass
 
 
+def excluir_perfil(conn: psycopg.Connection, profissional_id: str) -> None:
+    """Apaga o profissional e tudo que é dele, inclusive as reservas com os dados dos clientes.
+
+    Roda no contexto `sistema`. As reservas saem primeiro (referenciam serviços e origens); o resto
+    cai em cascata a partir do profissional, e a conta vai junto (com sessões e códigos).
+    """
+    conn.execute("delete from reservas where profissional_id = %s", (profissional_id,))
+    conn.execute("delete from profissionais where id = %s", (profissional_id,))
+
+
 def criar_perfil(
     conn: psycopg.Connection, conta_id: str, nome: str, slug: str, whatsapp: str, categoria: str
 ) -> str:

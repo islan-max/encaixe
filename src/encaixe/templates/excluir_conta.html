@@ -1,0 +1,19 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Excluir minha conta · Encaixe{% endblock %}
+{% block painel %}
+<h1>Excluir minha conta</h1>
+<div class="aviso erro" role="note">
+  <p>Isso apaga <strong>tudo</strong>, na hora e sem volta: a sua página, os serviços, os horários, todas as reservas com nome e WhatsApp dos clientes, a lista de espera e os links de divulgação. Os links que você já divulgou deixam de funcionar.</p>
+</div>
+<p>Se só quer parar de receber reservas, é mais simples <a href="/painel/servicos">desativar os serviços</a>.</p>
+<form method="post" action="/painel/excluir-conta" novalidate>
+  {{ csrf_campo() }}
+  {{ campo("confirmacao", "Para confirmar, escreva o endereço da sua página: " ~ perfil.slug, "text", "", erro, None, "off", True, 'autocapitalize="none" spellcheck="false"') }}
+  <div class="acoes">
+    <button class="botao perigo" type="submit">Excluir tudo</button>
+    <a class="botao secundario" href="/painel/perfil">Voltar</a>
+  </div>
+</form>
+{% endblock %}

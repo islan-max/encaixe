@@ -18,9 +18,16 @@ from encaixe.config import carregar
 from encaixe.db import painel, sistema
 from encaixe.formularios import dinheiro, hora, inteiro, texto, uuid_valido
 from encaixe.horarios import carregar_fuso
-from encaixe.profissionais import SlugEmUso, criar_perfil
+from encaixe.profissionais import SlugEmUso, criar_perfil, excluir_perfil
 from encaixe.senhas import senha_confere
-from encaixe.web import checar_csrf, exigir_usuario, ir_para, pagina, usuario_atual
+from encaixe.web import (
+    apagar_cookie_sessao,
+    checar_csrf,
+    exigir_usuario,
+    ir_para,
+    pagina,
+    usuario_atual,
+)
 
 roteador = APIRouter(prefix="/painel")
 Campo = Annotated[str, Form(max_length=2000)]
@@ -603,3 +610,32 @@ def codigos_novos(request: Request, senha: Campo = ""):
             raise HTTPException(403, "Senha incorreta. Volte e tente de novo.")
         novos = contas.gerar_codigos(conn, str(usuario["id"]))
     return pagina(request, "codigos.html", codigos=novos)
+
+
+@roteador.get("/excluir-conta")
+def excluir_form(request: Request):
+    pro = exigir_perfil(request)
+    with painel(pro) as conn:
+        perfil = _perfil(conn)
+    return pagina(request, "excluir_conta.html", secao="perfil", perfil=perfil, erro=None)
+
+
+@roteador.post("/excluir-conta", dependencies=Protegido)
+def excluir_conta(request: Request, confirmacao: Campo = ""):
+    pro = exigir_perfil(request)
+    with painel(pro) as conn:
+        perfil = _perfil(conn)
+    if confirmacao.strip().lower() != perfil["slug"]:
+        return pagina(
+            request,
+            "excluir_conta.html",
+            status=422,
+            secao="perfil",
+            perfil=perfil,
+            erro="Não bateu com o endereço da sua página. Escreva exatamente como está acima.",
+        )
+    with sistema() as conn:
+        excluir_perfil(conn, pro)
+    resposta = ir_para("/?excluida=1")
+    apagar_cookie_sessao(resposta)
+    return resposta

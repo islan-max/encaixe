@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block titulo %}Encaixe · Sua agenda sem troca de mensagem{% endblock %}
 {% block conteudo %}
+{% if request.query_params.get("excluida") %}<div class="aviso ok" role="status"><p>Sua conta foi excluída, com todos os dados.</p></div>{% endif %}
 <section class="heroi">
   <h1>Dá pra encaixar às 15h?</h1>
   <p class="lead">Seu cliente vê os horários livres, escolhe e marca sozinho, sem criar conta. Você abre o dia e manda o lembrete com um toque no WhatsApp.</p>

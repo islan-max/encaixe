@@ -34,7 +34,9 @@ class Seguranca(BaseHTTPMiddleware):
         cabecalhos["Cross-Origin-Opener-Policy"] = "same-origin"
         if carregar().producao:
             cabecalhos["Strict-Transport-Security"] = "max-age=31536000"
-        if not request.url.path.startswith("/static/"):
+        if request.url.path.startswith("/static/"):
+            cabecalhos.setdefault("Cache-Control", "public, max-age=3600")
+        else:
             cabecalhos.setdefault("Cache-Control", "no-store")
         return resposta
 
