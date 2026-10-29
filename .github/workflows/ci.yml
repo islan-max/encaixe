@@ -50,7 +50,8 @@ jobs:
       - name: Conferir que requirements.txt (usado pelo Render) bate com o uv.lock
         run: |
           uv export --locked --no-dev --no-emit-project --no-hashes -o requirements-conferencia.txt
-          diff requirements.txt requirements-conferencia.txt
+          # as duas primeiras linhas são o cabeçalho (com o nome do arquivo de saída)
+          diff <(tail -n +3 requirements.txt) <(tail -n +3 requirements-conferencia.txt)
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
