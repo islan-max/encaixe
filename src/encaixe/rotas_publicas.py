@@ -24,7 +24,7 @@ from encaixe.datas import data_longa, hora_curta
 from encaixe.db import hash_do_token, publico, sistema
 from encaixe.formularios import consulta, data, inteiro, texto, uuid_valido
 from encaixe.horarios import Horario, Ocupada, pode_cancelar
-from encaixe.reservas import ReservaRecusada, criar, novo_token
+from encaixe.reservas import ReservaRecusada, criar, token_da_reserva
 from encaixe.senhas import email_normalizado
 from encaixe.web import ir_para, pagina
 
@@ -151,7 +151,8 @@ def reservar(
     espera = limite.RESERVA_POR_IP.registrar(limite.ip_do_cliente(request))
     if espera:
         raise HTTPException(429)
-    token = novo_token()
+    nova_id = str(uuid.uuid4())
+    token = token_da_reserva(nova_id)
     nome_ok = texto(nome, 2, 80)
     numero = telefone.normalizar(whatsapp)
     email_ok = email_normalizado(email) if email.strip() else None
@@ -187,6 +188,7 @@ def reservar(
                     cliente_whatsapp=numero,
                     cliente_email=email_ok,
                     token=token,
+                    id=nova_id,
                 )
             except ReservaRecusada:
                 conflito = True
@@ -426,7 +428,6 @@ def _remarcar(request: Request, token: str, h: str):
     if limite.CANCELAR_POR_IP.registrar(limite.ip_do_cliente(request)):
         raise HTTPException(429)
     agora = tempo.agora()
-    novo_token_ = novo_token()
     inicio = _epoch(h)
     if inicio is None:
         raise HTTPException(404)
@@ -443,6 +444,7 @@ def _remarcar(request: Request, token: str, h: str):
         if alvo is None or not alvo.reservavel:
             return ir_para(f"/reserva/{token}/remarcar{consulta(dia=dia_local.isoformat())}")
         nova_id = str(uuid.uuid4())
+        novo_token_ = token_da_reserva(nova_id)
         # A antiga sai da frente primeiro: assim um horário vizinho (ou o mesmo dia) não conflita
         # com ela. Se a nova for recusada, a transação inteira volta e nada muda.
         conn.execute(

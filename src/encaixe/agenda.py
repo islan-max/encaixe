@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 import psycopg
 
@@ -64,8 +65,12 @@ def ocupacoes(
     return ocupadas, bloqueios
 
 
-def _limites_do_dia(regras: Regras, dia: date) -> tuple[datetime, datetime]:
-    tz = regras.tz
+def limites_do_dia(regras: Regras, dia: date) -> tuple[datetime, datetime]:
+    return limites_no_fuso(regras.tz, dia)
+
+
+def limites_no_fuso(tz: ZoneInfo, dia: date) -> tuple[datetime, datetime]:
+    """Do começo ao fim do dia `dia` no relógio de `tz`, em UTC."""
     inicio = datetime.combine(dia, time(0), tzinfo=tz).astimezone(UTC)
     fim = datetime.combine(dia + timedelta(days=1), time(0), tzinfo=tz).astimezone(UTC)
     return inicio, fim
@@ -88,7 +93,7 @@ def horarios_no_dia(
     agora: datetime,
     ignorar: Ocupada | None = None,
 ) -> list[Horario]:
-    inicio, fim = _limites_do_dia(regras, dia)
+    inicio, fim = limites_do_dia(regras, dia)
     # Folga e duração podem entrar no dia seguinte: busca com sobra.
     ocupadas, bloqueios = ocupacoes(conn, inicio - timedelta(hours=12), fim + timedelta(hours=12))
     return horarios_do_dia(regras, servico, dia, agora, _sem(ocupadas, ignorar), bloqueios)
@@ -112,8 +117,8 @@ def dias_livres(
     ultimo = min(primeiro + timedelta(days=DIAS_POR_PAGINA - 1), ultimo_do_horizonte)
     if primeiro > ultimo_do_horizonte:
         return [], False
-    de, _ = _limites_do_dia(regras, primeiro)
-    _, ate = _limites_do_dia(regras, ultimo)
+    de, _ = limites_do_dia(regras, primeiro)
+    _, ate = limites_do_dia(regras, ultimo)
     ocupadas, bloqueios = ocupacoes(conn, de - timedelta(hours=12), ate + timedelta(hours=12))
     ocupadas = _sem(ocupadas, ignorar)
     achados = []

@@ -1,0 +1,11 @@
+{% extends "painel_base.html" %}
+{% block titulo %}Horário cancelado · Encaixe{% endblock %}
+{% block painel %}
+<h1>Horário cancelado</h1>
+<div class="aviso ok" role="status"><p>O horário de {{ reserva.cliente_nome }} em {{ data_longa(reserva.inicio.astimezone(tz).date()) }}, {{ hora_curta(reserva.inicio, tz) }}, foi cancelado e já está livre na sua página.</p></div>
+<p>O Encaixe não avisa o cliente sozinho. Avise agora:</p>
+<div class="acoes">
+  {% if aviso %}<a class="botao" href="{{ aviso }}">Avisar {{ reserva.cliente_nome }} no WhatsApp</a>{% endif %}
+  <a class="botao secundario" href="{{ volta }}">Voltar para a agenda</a>
+</div>
+{% endblock %}

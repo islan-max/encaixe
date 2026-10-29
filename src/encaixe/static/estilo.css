@@ -198,3 +198,16 @@ a.chip:hover .dica, button.chip:hover .dica { color: inherit; }
 .estado.neutro { background: var(--superficie); }
 .isca { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .navegacao { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; }
+
+/* Agenda do profissional */
+.dia-nav { margin: 0 0 .75rem; }
+.faixa { list-style: none; margin: 0 0 1.25rem; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: .5rem; }
+.faixa a { display: flex; flex-direction: column; min-height: 56px; padding: .5rem .75rem; border-radius: 12px; background: var(--superficie); border: 2px solid var(--linha); color: var(--texto); text-decoration: none; font-weight: 600; }
+.faixa a[aria-current] { border-color: var(--marca); }
+.faixa .dica { font-weight: 400; font-size: .85rem; }
+.reserva-item { align-items: flex-start; flex-wrap: nowrap; gap: .75rem; }
+.reserva-hora { font-size: 1.25rem; font-weight: 700; min-width: 3.6rem; }
+.reserva-corpo { flex: 1; min-width: 0; }
+.reserva-corpo p { margin: 0 0 .25rem; }
+.reserva-corpo .item-acoes { margin-top: .5rem; }
+.reserva-nome { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; }

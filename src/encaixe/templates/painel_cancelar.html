@@ -1,0 +1,17 @@
+{% extends "painel_base.html" %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Cancelar horário · Encaixe{% endblock %}
+{% block painel %}
+<h1>Cancelar este horário?</h1>
+<dl class="detalhes">
+  <div><dt>Cliente</dt><dd>{{ reserva.cliente_nome }}</dd></div>
+  <div><dt>Serviço</dt><dd>{{ reserva.servico_nome }}</dd></div>
+  <div><dt>Quando</dt><dd>{{ data_longa(reserva.inicio.astimezone(tz).date()) }}, {{ hora_curta(reserva.inicio, tz) }}</dd></div>
+</dl>
+<p>O horário volta a ficar livre na sua página. Depois de cancelar, você poderá avisar o cliente pelo WhatsApp.</p>
+<form method="post" action="/painel/reservas/{{ reserva.id }}/cancelar" class="acoes">
+  {{ csrf_campo() }}<input type="hidden" name="dia" value="{{ dia }}">
+  <button class="botao perigo" type="submit">Sim, cancelar</button>
+  <a class="botao secundario" href="/painel{% if dia %}?dia={{ dia }}{% endif %}">Não, voltar</a>
+</form>
+{% endblock %}
