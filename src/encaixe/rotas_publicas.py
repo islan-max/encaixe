@@ -12,7 +12,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request
 
-from encaixe import limite, slugs, telefone, tempo
+from encaixe import divulgacao, limite, slugs, telefone, tempo
 from encaixe.agenda import (
     dias_livres,
     horarios_no_dia,
@@ -54,6 +54,17 @@ def _escolher_servico(servicos: list[dict], s: str) -> dict | None:
         if ident and str(servico["id"]) == ident:
             return servico
     return servicos[0] if len(servicos) == 1 else None
+
+
+def _origem_id(pro: str, codigo: str) -> str | None:
+    """A origem (link de divulgação) deste profissional com esse código, se existir."""
+    if not divulgacao.PADRAO_CODIGO.match(codigo):
+        return None
+    with sistema() as conn:
+        achada = conn.execute(
+            "select id from origens where codigo = %s and profissional_id = %s", (codigo, pro)
+        ).fetchone()
+    return str(achada["id"]) if achada else None
 
 
 def _epoch(h: str) -> datetime | None:
@@ -189,6 +200,7 @@ def reservar(
                     cliente_email=email_ok,
                     token=token,
                     id=nova_id,
+                    origem_id=_origem_id(pro, v),
                 )
             except ReservaRecusada:
                 conflito = True

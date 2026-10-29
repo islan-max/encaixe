@@ -1,0 +1,52 @@
+{% extends "painel_base.html" %}
+{% from "_campos.html" import campo %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Divulgação · Encaixe{% endblock %}
+{% block painel %}
+<h1>Divulgação</h1>
+<p>Cada link abaixo leva à sua página e conta quantas vezes foi aberto. Assim você descobre <strong>de onde vêm os seus clientes</strong>: cole um link diferente no Instagram, no WhatsApp e no cartão.</p>
+<p class="dica">Contamos só quantas vezes o link foi aberto, por dia. Não guardamos o endereço nem nenhum dado de quem abriu. Um mesmo cliente que abre duas vezes conta duas.</p>
+
+<ul class="lista origens" aria-label="Seus links de divulgação">
+  {% for o in itens %}
+  <li class="origem">
+    <div class="origem-qr" role="group" aria-label="QR code de {{ o.nome }}">{{ o.qr|safe }}</div>
+    <div class="origem-corpo">
+      <h2>{{ o.nome }}</h2>
+      <p class="link-curto"><a href="{{ o.url }}">{{ o.url }}</a></p>
+      <dl class="numeros">
+        <div><dt>Aberturas em 30 dias</dt><dd>{{ o.acessos_30 }}</dd></div>
+        <div><dt>Aberturas no total</dt><dd>{{ o.acessos }}</dd></div>
+        <div><dt>Reservas feitas</dt><dd>{{ o.reservas }}</dd></div>
+      </dl>
+      <div class="item-acoes">
+        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.png" aria-label="Baixar o QR code de {{ o.nome }} em PNG">Baixar QR (PNG)</a>
+        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.svg" aria-label="Baixar o QR code de {{ o.nome }} em SVG">Baixar QR (SVG)</a>
+        <form method="post" action="/painel/divulgacao/{{ o.id }}/arquivar">
+          {{ csrf_campo() }}
+          <button class="botao secundario pequeno" type="submit" aria-label="Esconder {{ o.nome }} da lista">Esconder</button>
+        </form>
+      </div>
+    </div>
+  </li>
+  {% else %}
+  <li class="item">Você escondeu todos os links. Crie um novo abaixo.</li>
+  {% endfor %}
+</ul>
+<p class="dica">"Esconder" tira da lista, mas o link e o QR code que você já divulgou continuam funcionando.</p>
+
+<section class="cartao" aria-labelledby="direto">
+  <h2 id="direto">Link direto, sem origem</h2>
+  <p>Este é o endereço da sua página. Quem entra por ele não é contado em nenhuma origem.</p>
+  <p class="link-curto"><a href="{{ link_direto }}">{{ link_direto }}</a></p>
+  <p class="dica">Reservas que chegaram por ele (ou por links que não são os de cima): {{ diretas }}.</p>
+</section>
+
+<h2>Novo link</h2>
+{% if erros %}<div class="aviso erro" role="alert"><p>Confira o campo abaixo.</p></div>{% endif %}
+<form method="post" action="/painel/divulgacao" novalidate class="cartao">
+  {{ csrf_campo() }}
+  {{ campo("nome", "Nome do link", "text", valores.nome, erros.nome, "Só você vê. Exemplo: Cartão da barbearia, Story de sexta.", "off") }}
+  <button class="botao" type="submit">Criar link</button>
+</form>
+{% endblock %}
