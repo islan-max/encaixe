@@ -71,29 +71,6 @@ def _perfil(conn: psycopg.Connection) -> dict:
 # --- início e criação do perfil ------------------------------------------------------------------
 
 
-@roteador.get("")
-def inicio(request: Request):
-    usuario = exigir_usuario(request)
-    restantes = None
-    if usuario.get("email"):
-        with sistema() as conn:
-            restantes = contas.codigos_restantes(conn, usuario["id"])
-    if not usuario["profissional_id"]:
-        return pagina(request, "painel_vazio.html", codigos_restantes=restantes)
-    with painel(str(usuario["profissional_id"])) as conn:
-        perfil = _perfil(conn)
-        n_servicos = conn.execute("select count(*) as n from servicos where ativo").fetchone()["n"]
-    return pagina(
-        request,
-        "painel.html",
-        secao="inicio",
-        perfil=perfil,
-        link=_link_publico(perfil["slug"]),
-        n_servicos=n_servicos,
-        codigos_restantes=restantes,
-    )
-
-
 def _comecar_contexto(valores=None, erros=None):
     return {
         "categorias": CATEGORIAS.values(),

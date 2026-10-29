@@ -1,11 +1,15 @@
 """Criar reserva. Quem decide se cabe é o gatilho do banco; aqui só se traduz a recusa."""
 
+import base64
+import hashlib
+import hmac
 import secrets
 import uuid
 from datetime import datetime
 
 import psycopg
 
+from encaixe.config import carregar
 from encaixe.db import hash_do_token
 
 
@@ -26,8 +30,21 @@ _MOTIVOS = {
 
 
 def novo_token() -> str:
-    """O link secreto da reserva: 192 bits, impossível de adivinhar."""
+    """Um token aleatório de 192 bits (usado em testes; as reservas de verdade usam o derivado)."""
     return secrets.token_urlsafe(24)
+
+
+def token_da_reserva(reserva_id: str) -> str:
+    """O link secreto da reserva, derivado do id com HMAC (192 bits).
+
+    O banco guarda só o hash. Derivar em vez de sortear deixa o profissional montar o link no
+    lembrete sem que ele precise ficar salvo; quem vê só o banco não consegue calcular os links.
+    Trocar a SECRET_KEY invalida os links já enviados.
+    """
+    mac = hmac.new(
+        carregar().secret_key.encode(), f"reserva:{reserva_id}".encode(), hashlib.sha256
+    ).digest()
+    return base64.urlsafe_b64encode(mac[:24]).decode()
 
 
 def criar(

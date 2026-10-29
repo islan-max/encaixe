@@ -1,7 +1,9 @@
 {% extends "painel_base.html" %}
-{% block titulo %}Meu painel · Encaixe{% endblock %}
+{% from "_csrf.html" import csrf_campo %}
+{% block titulo %}Agenda · Encaixe{% endblock %}
 {% block painel %}
-<h1>Olá, {{ perfil.nome }}</h1>
+{% set dia_txt = escolhido.isoformat() %}
+<h1>{% if escolhido == hoje %}Hoje, {% endif %}{{ data_longa(escolhido) }}</h1>
 
 {% if codigos_restantes is not none and codigos_restantes <= 2 %}
 <div class="aviso atencao" role="status">
@@ -9,12 +11,112 @@
 </div>
 {% endif %}
 
+<nav class="navegacao dia-nav" aria-label="Trocar de dia">
+  <a href="/painel?dia={{ anterior.isoformat() }}">&larr; Dia anterior</a>
+  {% if escolhido != hoje %}<a href="/painel">Hoje</a>{% endif %}
+  <a href="/painel?dia={{ proximo.isoformat() }}">Próximo dia &rarr;</a>
+</nav>
+
+<ul class="faixa" aria-label="Próximos dias">
+  {% for f in faixa %}
+  <li>
+    <a href="/painel{% if f.dia != hoje %}?dia={{ f.dia.isoformat() }}{% endif %}"{% if f.dia == escolhido %} aria-current="date"{% endif %}>
+      <span>{{ dia_da_semana(f.dia)[:3] }} {{ data_curta(f.dia) }}</span>
+      <span class="dica">{{ f.n }} marcado{{ "s" if f.n != 1 }}</span>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<h2>Horários do dia</h2>
+{% if reservas %}
+<ul class="lista agenda" aria-label="Reservas do dia">
+  {% for r in reservas %}
+  {% set ativa = r.status == "confirmada" %}
+  {% set comecou = r.inicio <= agora %}
+  <li class="item reserva-item">
+    <div class="reserva-hora">{{ hora_curta(r.inicio, tz) }}</div>
+    <div class="reserva-corpo">
+      <p class="reserva-nome"><strong>{{ r.cliente_nome }}</strong>
+        <span class="etiqueta{% if r.status in ('cancelada_cliente', 'cancelada_profissional', 'faltou') %} aviso-etiqueta{% endif %}">
+          {%- if ativa and not comecou %}Marcado
+          {%- elif ativa %}Já começou
+          {%- elif r.status == "atendida" %}Atendeu
+          {%- elif r.status == "faltou" %}Faltou
+          {%- elif r.status == "cancelada_cliente" %}Cancelado pelo cliente
+          {%- elif r.status == "cancelada_profissional" %}Cancelado por você
+          {%- endif -%}
+        </span>
+      </p>
+      <p class="dica">{{ r.servico_nome }}{% if r.cliente_whatsapp %} · {{ telefone(r.cliente_whatsapp) }}{% endif %}{% if r.lembrete_em and ativa %} · lembrete enviado às {{ hora_curta(r.lembrete_em, tz) }}{% endif %}</p>
+      <div class="item-acoes">
+        {% if ativa and not comecou and r.cliente_whatsapp %}
+        <form method="post" action="/painel/reservas/{{ r.id }}/lembrar">
+          {{ csrf_campo() }}
+          <button class="botao pequeno" type="submit" aria-label="Lembrar {{ r.cliente_nome }} no WhatsApp">Lembrar no WhatsApp</button>
+        </form>
+        {% endif %}
+        {% if ativa and comecou %}
+        <form method="post" action="/painel/reservas/{{ r.id }}/estado">
+          {{ csrf_campo() }}<input type="hidden" name="novo" value="atendida"><input type="hidden" name="dia" value="{{ dia_txt }}">
+          <button class="botao pequeno" type="submit" aria-label="Marcar que {{ r.cliente_nome }} foi atendido">Atendeu</button>
+        </form>
+        <form method="post" action="/painel/reservas/{{ r.id }}/estado">
+          {{ csrf_campo() }}<input type="hidden" name="novo" value="faltou"><input type="hidden" name="dia" value="{{ dia_txt }}">
+          <button class="botao secundario pequeno" type="submit" aria-label="Marcar que {{ r.cliente_nome }} faltou">Faltou</button>
+        </form>
+        {% elif r.status in ("atendida", "faltou") %}
+        <form method="post" action="/painel/reservas/{{ r.id }}/estado">
+          {{ csrf_campo() }}<input type="hidden" name="novo" value="{{ 'faltou' if r.status == 'atendida' else 'atendida' }}"><input type="hidden" name="dia" value="{{ dia_txt }}">
+          <button class="botao secundario pequeno" type="submit" aria-label="Corrigir: marcar {{ r.cliente_nome }} como {{ 'faltou' if r.status == 'atendida' else 'atendido' }}">Corrigir para {{ "faltou" if r.status == "atendida" else "atendeu" }}</button>
+        </form>
+        {% endif %}
+        {% if ativa and not comecou %}
+        <a class="botao perigo pequeno" href="/painel/reservas/{{ r.id }}/cancelar?dia={{ dia_txt }}" aria-label="Cancelar o horário de {{ r.cliente_nome }}">Cancelar</a>
+        {% endif %}
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="cartao"><p>Nenhum horário marcado para este dia.</p></div>
+{% endif %}
+
+{% if espera %}
+<section aria-labelledby="espera-titulo">
+  <h2 id="espera-titulo">Lista de espera deste dia</h2>
+  <p class="dica">Quem pediu para ser avisado se abrisse uma vaga. Tocar em "Chamar" abre o WhatsApp com a mensagem pronta.</p>
+  <ul class="lista" aria-label="Lista de espera">
+    {% for e in espera %}
+    <li class="item">
+      <div>
+        <strong>{{ e.nome }}</strong><br>
+        <span class="dica">{{ e.servico_nome }} · {{ telefone(e.whatsapp) }}{% if e.avisada_em %} · chamada às {{ hora_curta(e.avisada_em, tz) }}{% endif %}</span>
+      </div>
+      <div class="item-acoes">
+        <form method="post" action="/painel/espera/{{ e.id }}/chamar">
+          {{ csrf_campo() }}
+          <button class="botao pequeno" type="submit" aria-label="Chamar {{ e.nome }} no WhatsApp">Chamar</button>
+        </form>
+        <form method="post" action="/painel/espera/{{ e.id }}/apagar">
+          {{ csrf_campo() }}<input type="hidden" name="dia" value="{{ dia_txt }}">
+          <button class="botao secundario pequeno" type="submit" aria-label="Tirar {{ e.nome }} da lista de espera">Tirar da lista</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section class="cartao" aria-labelledby="link-titulo">
   <h2 id="link-titulo">Sua página de agendamento</h2>
-  <p>Este é o link que você divulga. O cliente abre, escolhe o horário e marca.</p>
+  <p>É o link que você divulga. O cliente abre, escolhe o horário e marca.</p>
   <p><a href="{{ link }}"><strong>{{ link }}</strong></a></p>
 </section>
 
+{% if total == 0 %}
 <section aria-labelledby="passos">
   <h2 id="passos">Para sua página ficar pronta</h2>
   <ol>
@@ -24,4 +126,5 @@
     <li><a href="/painel/folgas">Marque folgas e férias</a> para os horários sumirem da página.</li>
   </ol>
 </section>
+{% endif %}
 {% endblock %}
