@@ -8,8 +8,8 @@ Os dados ficam em `.dev-db/` (ignorado pelo Git). Com `DATABASE_URL` definida, u
 
 import argparse
 import os
-import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -24,9 +24,9 @@ def main() -> None:
     if not os.environ.get("DATABASE_URL"):
         import pgserver
 
-        pasta = RAIZ / ".dev-db"
-        if not opcoes.manter and pasta.exists():
-            shutil.rmtree(pasta, ignore_errors=True)
+        # Sem --manter, cada subida usa uma pasta nova: não herda banco travado de uma execução
+        # que foi derrubada à força.
+        pasta = RAIZ / ".dev-db" if opcoes.manter else Path(tempfile.mkdtemp(prefix="encaixe-dev-"))
         os.environ["DATABASE_URL"] = pgserver.get_server(pasta, cleanup_mode="stop").get_uri()
     os.environ.setdefault("BASE_URL", f"http://localhost:{opcoes.porta}")
 

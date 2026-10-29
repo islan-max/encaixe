@@ -95,7 +95,7 @@
   {{ campo("whatsapp", "Seu WhatsApp", "tel", valores.whatsapp, erros.whatsapp, "Com DDD. " ~ perfil.nome ~ " usa para confirmar e lembrar do horário.", "tel") }}
   {{ campo("email", "E-mail (opcional)", "email", valores.email, erros.email, "Não mandamos e-mail. Só guarde se quiser que " ~ perfil.nome ~ " tenha mais um jeito de falar com você.", "email", False) }}
   <button class="botao" type="submit">Confirmar horário</button>
-  <p class="dica" style="margin-top:.75rem">Guardamos seu nome e WhatsApp só para {{ perfil.nome }} cuidar deste horário. Você pode apagar depois, pela página da reserva. <a href="/privacidade">Política de privacidade</a>.</p>
+  <p class="dica depois-pequeno">Guardamos seu nome e WhatsApp só para {{ perfil.nome }} cuidar deste horário. Você pode apagar depois, pela página da reserva. <a href="/privacidade">Política de privacidade</a>.</p>
 </form>
 {% endif %}
 {% endblock %}

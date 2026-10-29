@@ -224,3 +224,14 @@ a.chip:hover .dica, button.chip:hover .dica { color: inherit; }
 .numeros div { display: flex; flex-direction: column; }
 .numeros dt { color: var(--suave); font-size: .9rem; }
 .numeros dd { margin: 0; font-size: 1.4rem; font-weight: 700; }
+
+/* Espaçamentos (a CSP não aceita style="" nas páginas) */
+.depois { margin-top: 1.25rem; }
+.depois-pequeno { margin-top: .75rem; }
+.separado { margin-top: 2rem; }
+
+/* Alvos de toque: link sozinho numa linha ganha altura (WCAG 2.5.8 pede 24 px, mirar em 44). */
+.navegacao a, .link-curto a, p > a:only-child:not(.botao) { display: inline-block; padding: .5rem 0; }
+/* Campos de data e hora: o Chrome põe o foco no pedaço de dentro, então o anel vai no campo todo. */
+input[type=time]:focus-within, input[type=date]:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; border-radius: 4px; }
+.rodape a { display: inline-block; padding: .5rem 0; }

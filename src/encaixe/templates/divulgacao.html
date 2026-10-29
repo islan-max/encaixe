@@ -1,6 +1,6 @@
 {% extends "painel_base.html" %}
 {% from "_campos.html" import campo %}
-{% from "_csrf.html" import csrf_campo %}
+{% from "_csrf.html" import csrf_campo with context %}
 {% block titulo %}Divulgação · Encaixe{% endblock %}
 {% block painel %}
 <h1>Divulgação</h1>
@@ -20,11 +20,11 @@
         <div><dt>Reservas feitas</dt><dd>{{ o.reservas }}</dd></div>
       </dl>
       <div class="item-acoes">
-        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.png" aria-label="Baixar o QR code de {{ o.nome }} em PNG">Baixar QR (PNG)</a>
-        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.svg" aria-label="Baixar o QR code de {{ o.nome }} em SVG">Baixar QR (SVG)</a>
+        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.png">Baixar QR (PNG)<span class="sr-only"> de {{ o.nome }}</span></a>
+        <a class="botao secundario pequeno" href="/painel/divulgacao/{{ o.id }}/qr.svg">Baixar QR (SVG)<span class="sr-only"> de {{ o.nome }}</span></a>
         <form method="post" action="/painel/divulgacao/{{ o.id }}/arquivar">
           {{ csrf_campo() }}
-          <button class="botao secundario pequeno" type="submit" aria-label="Esconder {{ o.nome }} da lista">Esconder</button>
+          <button class="botao secundario pequeno" type="submit">Esconder<span class="sr-only"> {{ o.nome }} da lista</span></button>
         </form>
       </div>
     </div>

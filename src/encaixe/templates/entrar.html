@@ -10,10 +10,10 @@
   {{ campo("senha", "Senha", "password", "", None, None, "current-password") }}
   <button class="botao" type="submit">Entrar</button>
 </form>
-<p style="margin-top:1.25rem"><a href="/recuperar">Perdi minha senha</a></p>
+<p class="depois"><a href="/recuperar">Perdi minha senha</a></p>
 {% if google_ativo %}
 <p class="separador">ou</p>
 <a class="botao secundario" href="/entrar/google">Entrar com Google</a>
 {% endif %}
-<p style="margin-top:1.25rem">Primeira vez aqui? <a href="/cadastrar">Criar conta</a></p>
+<p class="depois">Primeira vez aqui? <a href="/cadastrar">Criar conta</a></p>
 {% endblock %}
